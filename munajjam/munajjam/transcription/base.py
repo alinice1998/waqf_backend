@@ -25,7 +25,7 @@ class BaseTranscriber(ABC):
         """Context manager support."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb):  # noqa: B027  # intentional no-op default; subclasses may override
         """Context manager support."""
         pass
 
