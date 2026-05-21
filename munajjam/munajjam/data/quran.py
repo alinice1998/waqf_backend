@@ -6,6 +6,7 @@ bundled CSV file.
 """
 
 import csv
+import os
 from functools import lru_cache
 from pathlib import Path
 
@@ -21,6 +22,14 @@ def _get_data_path() -> Path:
 
 def _get_quran_csv_path() -> Path:
     """Get path to the Quran ayahs CSV file."""
+    # Allow an explicit override so embedders (e.g. the desktop app) can point
+    # at a CSV bundled outside the installed package.
+    override = os.environ.get("MUNAJJAM_QURAN_CSV")
+    if override:
+        override_path = Path(override)
+        if override_path.exists():
+            return override_path
+
     # First try bundled data
     bundled = _get_data_path() / "quran_ayat.csv"
     if bundled.exists():
@@ -33,7 +42,8 @@ def _get_quran_csv_path() -> Path:
 
     raise QuranDataError(
         "Quran ayahs CSV not found. "
-        "Expected at: munajjam/data/quran_ayat.csv or data/Quran Ayas List.csv"
+        "Expected at: munajjam/data/quran_ayat.csv or data/Quran Ayas List.csv "
+        "(set MUNAJJAM_QURAN_CSV to override)"
     )
 
 

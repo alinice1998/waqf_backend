@@ -54,7 +54,6 @@ def run_with_transcription(audio_path: str, surah_id: int):
     transcriber = WhisperTranscriber()
     print("   Model loaded.")
 
-   
     segments = transcriber.transcribe(audio_path, surah_id=surah_id)
 
     transcribe_time = time.time() - start
