@@ -6,6 +6,7 @@ This module defines the interface that all transcriber implementations must foll
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from types import TracebackType
 
 from munajjam.models import Segment
 
@@ -21,11 +22,16 @@ class BaseTranscriber(ABC):
             segments = transcriber.transcribe("surah_1.wav", surah_id=1)
     """
 
-    def __enter__(self):
+    def __enter__(self) -> "BaseTranscriber":
         """Context manager support."""
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):  # noqa: B027  # intentional no-op default; subclasses may override
+    def __exit__(  # noqa: B027  # intentional no-op default; subclasses may override
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         """Context manager support."""
         pass
 
@@ -37,7 +43,6 @@ class BaseTranscriber(ABC):
         surah_id: int,
         batch_size: int = 16,
     ) -> list[Segment]:
-        ...
         """
         Transcribe an audio file to segments.
 
@@ -53,3 +58,4 @@ class BaseTranscriber(ABC):
             TranscriptionError: If transcription fails
             AudioFileError: If audio file cannot be read
         """
+        ...
