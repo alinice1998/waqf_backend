@@ -5,6 +5,7 @@ Alignment result data model.
 from pydantic import BaseModel, Field, computed_field
 
 from munajjam.models.ayah import Ayah
+from munajjam.models.segment import WordTimestamp
 
 
 class AlignmentResult(BaseModel):
@@ -50,6 +51,10 @@ class AlignmentResult(BaseModel):
     overlap_detected: bool = Field(
         default=False,
         description="Whether overlap with adjacent segment was detected and removed",
+    )
+    words: list[WordTimestamp] | None = Field(
+        default=None,
+        description="List of word-level timestamps for this ayah",
     )
 
     @computed_field  # type: ignore[prop-decorator]

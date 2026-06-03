@@ -33,6 +33,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from munajjam._version import __version__
 from munajjam.models.result import AlignmentResult
 from munajjam.models.surah import SURAH_NAMES
+from munajjam.models.segment import WordTimestamp
 
 
 class FormattedAyahResult(BaseModel):
@@ -97,6 +98,10 @@ class FormattedAyahResult(BaseModel):
     overlap_detected: bool = Field(
         ...,
         description="Whether overlap with adjacent segment was detected",
+    )
+    words: list[WordTimestamp] | None = Field(
+        default=None,
+        description="Word-level timestamps",
     )
 
 
@@ -236,6 +241,7 @@ def _format_single_result(result: AlignmentResult) -> FormattedAyahResult:
         similarity_score=round(result.similarity_score, 3),
         is_high_confidence=result.is_high_confidence,
         overlap_detected=result.overlap_detected,
+        words=result.words,
     )
 
 

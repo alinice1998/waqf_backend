@@ -84,6 +84,13 @@ def create_parser() -> argparse.ArgumentParser:
         default=WhisperBackend.OPENAI.value,
         help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
     )
+    align_parser.add_argument(
+        "--riwaya",
+        type=str,
+        choices=["hafs", "warsh"],
+        default="hafs",
+        help="The Quranic riwaya to use for reference text (default: hafs)",
+    )
     # --- batch subcommand ---
     batch_parser = subparsers.add_parser(
         "batch",
@@ -129,6 +136,13 @@ def create_parser() -> argparse.ArgumentParser:
         default=WhisperBackend.OPENAI.value,
         help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
     )
+    batch_parser.add_argument(
+        "--riwaya",
+        type=str,
+        choices=["hafs", "warsh"],
+        default="hafs",
+        help="The Quranic riwaya to use for reference text (default: hafs)",
+    )
     return parser
 
 
@@ -149,14 +163,22 @@ def _format_results(results: list, fmt: str) -> str:
     if fmt == "json":
         output = []
         for r in results:
-            output.append(
-                {
-                    "ayah_number": r.ayah.ayah_number,
-                    "start_time": round(r.start_time, 2),
-                    "end_time": round(r.end_time, 2),
-                    "text": r.ayah.text,
-                }
-            )
+            result_dict = {
+                "ayah_number": r.ayah.ayah_number,
+                "start_time": round(r.start_time, 2),
+                "end_time": round(r.end_time, 2),
+                "text": r.ayah.text,
+            }
+            if r.words:
+                result_dict["words"] = [
+                    {
+                        "word": w.word,
+                        "start_time": round(w.start, 2),
+                        "end_time": round(w.end, 2),
+                    }
+                    for w in r.words
+                ]
+            output.append(result_dict)
         return json.dumps(output, ensure_ascii=False, indent=2)
     elif fmt == "csv":
         lines = ["ayah_number,start_time,end_time,text"]
@@ -223,10 +245,11 @@ def cmd_align(args: argparse.Namespace) -> int:
 
     print(f"Processing surah {surah_num} from {audio_path}...", file=sys.stderr)
     print(f"Strategy: {args.strategy}", file=sys.stderr)
+    print(f"Riwaya: {args.riwaya}", file=sys.stderr)
 
-    from munajjam.config import get_settings
+    from munajjam.config import configure, get_settings
 
-    settings = get_settings()
+    settings = configure(riwaya=args.riwaya)
 
     transcriber = WhisperFactory().create_whisper(
         backend=WhisperBackend(args.whisper_backend),
@@ -249,7 +272,7 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
-    from munajjam.config import get_settings
+    from munajjam.config import configure, get_settings
     from munajjam.core import align
     from munajjam.data import load_surah_ayahs
 
@@ -268,8 +291,9 @@ def cmd_batch(args: argparse.Namespace) -> int:
 
     output_dir = Path(args.output_dir) if args.output_dir else input_dir
     output_dir.mkdir(parents=True, exist_ok=True)
-    settings = get_settings()
+    settings = configure(riwaya=args.riwaya)
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
+    print(f"Riwaya: {args.riwaya}", file=sys.stderr)
     transcriber = WhisperFactory().create_whisper(
         backend=WhisperBackend(args.whisper_backend),
         model_name=settings.model_id,

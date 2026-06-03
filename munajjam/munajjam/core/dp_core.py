@@ -163,6 +163,7 @@ def _align_greedy_multi_ayah(
                     else f"[{len(best_match_segs)} segs -> {len(best_match_ayahs)} ayahs]",
                     similarity_score=best_score,
                     overlap_detected=len(best_match_ayahs) > 1 or len(best_match_segs) > 1,
+                    words=[w for s in best_match_segs if s.words for w in s.words] if best_match_segs else None,
                 )
                 results.append(result)
                 current_time += ayah_duration
@@ -296,6 +297,11 @@ def align_segments_dp(
 
         sim_score = similarity(merged_text, ayah.text)
 
+        all_words = []
+        for s in segments[seg_start:seg_end]:
+            if s.words:
+                all_words.extend(s.words)
+
         result = AlignmentResult(
             ayah=ayah,
             start_time=start_time,
@@ -303,6 +309,7 @@ def align_segments_dp(
             transcribed_text=merged_text,
             similarity_score=sim_score,
             overlap_detected=False,
+            words=all_words if all_words else None,
         )
         results.append(result)
 
@@ -467,6 +474,11 @@ def align_segments_dp_with_constraints(
 
         sim_score = similarity(merged_text, ayah.text)
 
+        all_words = []
+        for s in segments[seg_start:seg_end]:
+            if s.words:
+                all_words.extend(s.words)
+
         result = AlignmentResult(
             ayah=ayah,
             start_time=start_time,
@@ -474,6 +486,7 @@ def align_segments_dp_with_constraints(
             transcribed_text=merged_text,
             similarity_score=sim_score,
             overlap_detected=False,
+            words=all_words if all_words else None,
         )
         results.append(result)
 

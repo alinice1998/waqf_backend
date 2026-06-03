@@ -147,6 +147,7 @@ def _finalize_ayah(
     end_time: float,
     overlap_detected: bool,
     next_ayah_start: float | None = None,
+    merged_segments: list[Segment] | None = None,
 ) -> AlignmentResult:
     """
     Finalize alignment for an ayah and create result.
@@ -177,6 +178,7 @@ def _finalize_ayah(
         transcribed_text=merged_text,
         similarity_score=full_sim,
         overlap_detected=overlap_detected,
+        words=[w for s in merged_segments if s.words for w in s.words] if merged_segments else None,
     )
 
     # Update context
@@ -257,6 +259,7 @@ def align_segments(
         merged_text = segment.text
         end_time = segment.end
         overlap_flag = False
+        current_segments = [segment]
 
         # Process until we find ayah boundary
         while True:
@@ -291,7 +294,7 @@ def align_segments(
             # Check if reached end of ayah
             is_end, _ = _check_end_of_ayah(merged_text, ayah, settings)
             if is_end:
-                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag)
+                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag, merged_segments=current_segments)
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break
@@ -323,6 +326,7 @@ def align_segments(
                             end_time,
                             overlap_flag,
                             next_ayah_start=next_segment.start,
+                            merged_segments=current_segments,
                         )
                         if on_ayah_aligned:
                             on_ayah_aligned(result)
@@ -361,6 +365,7 @@ def align_segments(
                                 end_time,
                                 overlap_flag,
                                 next_ayah_start=gap_start,
+                                merged_segments=current_segments,
                             )
                             if on_ayah_aligned:
                                 on_ayah_aligned(result)
@@ -373,12 +378,13 @@ def align_segments(
                     overlap_flag = True
                     ctx.overlaps_detected += 1
                 end_time = next_segment.end
+                current_segments.append(next_segment)
                 i += 1
                 ctx.segments_merged += 1
 
             else:
                 # End of segments - finalize last ayah
-                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag)
+                result = _finalize_ayah(ctx, merged_text, start_time, end_time, overlap_flag, merged_segments=current_segments)
                 if on_ayah_aligned:
                     on_ayah_aligned(result)
                 break

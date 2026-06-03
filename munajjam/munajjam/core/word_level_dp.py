@@ -13,7 +13,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from ..models import AlignmentResult, Ayah, Segment
+from ..models import AlignmentResult, Ayah, Segment, WordTimestamp
 from .arabic import normalize_arabic
 from .dp_core import _filter_special_segments
 from .matcher import similarity
@@ -704,6 +704,16 @@ def align_segments_word_dp(
 
         sim = similarity(transcribed, ayah.text)
 
+        ayah_words = []
+        for w in words[word_start:word_end]:
+            ayah_words.append(
+                WordTimestamp(
+                    word=w.text,
+                    start=round(w.estimated_start, 3),
+                    end=round(w.estimated_end, 3),
+                )
+            )
+
         results.append(
             AlignmentResult(
                 ayah=ayah,
@@ -712,6 +722,7 @@ def align_segments_word_dp(
                 transcribed_text=transcribed,
                 similarity_score=round(sim, 4),
                 overlap_detected=False,
+                words=ayah_words,
             )
         )
 

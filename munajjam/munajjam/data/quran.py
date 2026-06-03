@@ -2,10 +2,10 @@
 Quran reference data loader.
 
 Provides functions to load and access canonical Quran text from the
-bundled CSV file.
+bundled JSON file.
 """
 
-import csv
+import json
 import os
 from functools import lru_cache
 from pathlib import Path
@@ -13,6 +13,7 @@ from pathlib import Path
 from munajjam.exceptions import QuranDataError
 from munajjam.models import Ayah, Surah
 from munajjam.models.surah import SURAH_AYAH_COUNTS, SURAH_NAMES
+from munajjam.config import get_settings
 
 
 def _get_data_path() -> Path:
@@ -20,73 +21,71 @@ def _get_data_path() -> Path:
     return Path(__file__).parent
 
 
-def _get_quran_csv_path() -> Path:
-    """Get path to the Quran ayahs CSV file."""
-    # Allow an explicit override so embedders (e.g. the desktop app) can point
-    # at a CSV bundled outside the installed package.
-    override = os.environ.get("MUNAJJAM_QURAN_CSV")
-    if override:
-        override_path = Path(override)
-        if override_path.exists():
-            return override_path
-
-    # First try bundled data
-    bundled = _get_data_path() / "quran_ayat.csv"
+def _get_quran_json_path(riwaya: str) -> Path:
+    """Get path to the Quran ayahs JSON file for the given riwaya."""
+    bundled = _get_data_path() / f"quran_{riwaya}.json"
     if bundled.exists():
         return bundled
 
-    # Fall back to original data location (for development)
-    project_data = Path("data") / "Quran Ayas List.csv"
-    if project_data.exists():
-        return project_data
-
     raise QuranDataError(
-        "Quran ayahs CSV not found. "
-        "Expected at: munajjam/data/quran_ayat.csv or data/Quran Ayas List.csv "
-        "(set MUNAJJAM_QURAN_CSV to override)"
+        f"Quran ayahs JSON for riwaya '{riwaya}' not found. "
+        f"Expected at: {bundled}"
     )
 
 
-@lru_cache(maxsize=1)
-def load_ayahs() -> list[Ayah]:
+@lru_cache(maxsize=2)
+def load_ayahs(riwaya: str | None = None) -> list[Ayah]:
     """
-    Load all ayahs from the CSV file.
+    Load all ayahs from the JSON file based on riwaya.
+
+    Args:
+        riwaya: The riwaya to load (e.g., 'hafs', 'warsh'). If None, uses config.
 
     Returns:
-        List of all Ayah objects (6236 ayahs)
+        List of all Ayah objects
 
     Raises:
-        QuranDataError: If CSV file cannot be loaded
+        QuranDataError: If JSON file cannot be loaded
     """
-    try:
-        csv_path = _get_quran_csv_path()
-        ayahs = []
+    if riwaya is None:
+        riwaya = get_settings().riwaya
 
-        with open(csv_path, encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                ayah = Ayah(
-                    id=int(row["id"]),
-                    surah_id=int(row["sura_id"]),
-                    ayah_number=int(row["index"]),
-                    text=row["text"],
-                )
-                ayahs.append(ayah)
+    try:
+        json_path = _get_quran_json_path(riwaya)
+        ayahs = []
+        
+        with open(json_path, encoding="utf-8") as f:
+            data = json.load(f)
+            
+        global_id = 1
+        for surah_idx in range(1, 115):
+            surah_str = str(surah_idx)
+            if surah_str in data:
+                for idx, text in enumerate(data[surah_str]):
+                    ayah = Ayah(
+                        id=global_id,
+                        surah_id=surah_idx,
+                        ayah_number=idx + 1,
+                        text=text,
+                    )
+                    ayahs.append(ayah)
+                    global_id += 1
 
         return ayahs
 
     except FileNotFoundError as e:
-        raise QuranDataError("Quran ayahs CSV file not found") from e
+        raise QuranDataError(f"Quran ayahs JSON file not found for riwaya {riwaya}") from e
     except Exception as e:
         raise QuranDataError(f"Failed to load Quran ayahs: {e}") from e
 
 
-def load_surah_ayahs(surah_id: int) -> list[Ayah]:
+def load_surah_ayahs(surah_id: int, riwaya: str | None = None) -> list[Ayah]:
     """
     Load ayahs for a specific surah.
 
     Args:
         surah_id: Surah number (1-114)
+        riwaya: The riwaya to load.
 
     Returns:
         List of Ayah objects for the surah
@@ -94,22 +93,23 @@ def load_surah_ayahs(surah_id: int) -> list[Ayah]:
     if surah_id < 1 or surah_id > 114:
         raise ValueError(f"Invalid surah_id: {surah_id}. Must be 1-114.")
 
-    all_ayahs = load_ayahs()
+    all_ayahs = load_ayahs(riwaya)
     return [a for a in all_ayahs if a.surah_id == surah_id]
 
 
-def get_ayah(surah_id: int, ayah_number: int) -> Ayah | None:
+def get_ayah(surah_id: int, ayah_number: int, riwaya: str | None = None) -> Ayah | None:
     """
     Get a specific ayah by surah and ayah number.
 
     Args:
         surah_id: Surah number (1-114)
         ayah_number: Ayah number within the surah
+        riwaya: The riwaya to load.
 
     Returns:
         Ayah if found, None otherwise
     """
-    ayahs = load_surah_ayahs(surah_id)
+    ayahs = load_surah_ayahs(surah_id, riwaya)
 
     for ayah in ayahs:
         if ayah.ayah_number == ayah_number:
@@ -174,12 +174,13 @@ def get_surah_name(surah_id: int) -> str:
 
 
 # Convenience function for quick access
-def ayahs_for_surah(surah_id: int | str) -> list[Ayah]:
+def ayahs_for_surah(surah_id: int | str, riwaya: str | None = None) -> list[Ayah]:
     """
     Load ayahs for a surah (accepts int or zero-padded string).
 
     Args:
         surah_id: Surah number as int (1-114) or string ("001", "114")
+        riwaya: The riwaya to load.
 
     Returns:
         List of Ayah objects
@@ -187,4 +188,4 @@ def ayahs_for_surah(surah_id: int | str) -> list[Ayah]:
     if isinstance(surah_id, str):
         surah_id = int(surah_id)
 
-    return load_surah_ayahs(surah_id)
+    return load_surah_ayahs(surah_id, riwaya)
