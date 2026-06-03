@@ -6,6 +6,12 @@ import librosa
 import numpy as np
 import soundfile as sf
 import torch
+try:
+    import omegaconf
+    if hasattr(torch.serialization, "add_safe_globals"):
+        torch.serialization.add_safe_globals([omegaconf.listconfig.ListConfig])
+except Exception:
+    pass
 import whisperx
 from ctc_segmentation import CtcSegmentationParameters, ctc_segmentation
 from rapidfuzz import fuzz
