@@ -118,10 +118,12 @@ cache/
 # Allow example outputs in munajjam/examples
 *.json
 !munajjam/examples/*.json
+!munajjam/munajjam/data/*.json
 
 # Generated HTML/CSV (analysis outputs)
 *.html
 *.csv
+!munajjam/munajjam/data/*.csv
 batch_process.py
 *.mp3
 
