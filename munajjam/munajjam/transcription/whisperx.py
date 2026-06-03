@@ -6,12 +6,15 @@ import librosa
 import numpy as np
 import soundfile as sf
 import torch
-try:
-    import omegaconf
-    if hasattr(torch.serialization, "add_safe_globals"):
-        torch.serialization.add_safe_globals([omegaconf.listconfig.ListConfig])
-except Exception:
-    pass
+
+# Workaround for PyTorch 2.6+ weights_only=True default which breaks pyannote/lightning
+_original_torch_load = torch.load
+def _patched_torch_load(*args, **kwargs):
+    if "weights_only" not in kwargs:
+        kwargs["weights_only"] = False
+    return _original_torch_load(*args, **kwargs)
+torch.load = _patched_torch_load
+
 import whisperx
 from ctc_segmentation import CtcSegmentationParameters, ctc_segmentation
 from rapidfuzz import fuzz
