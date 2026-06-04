@@ -15,9 +15,7 @@ def _patched_torch_load(*args, **kwargs):
 torch.load = _patched_torch_load
 
 import whisperx
-from ctc_segmentation import CtcSegmentationParameters, ctc_segmentation
 from rapidfuzz import fuzz
-from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 from pathlib import Path
 
 from munajjam.core.arabic import detect_segment_type
@@ -37,83 +35,13 @@ class Whisperx(BaseTranscriber):
         self.wav2vec2_model_id = settings.wav2vec2_model_id
 
         self.whisper_model = None
-        self.wav2vec2_model = None
-        self.wav2vec2_processor = None
+        self.whisper_model = None
 
-    def _normalize_arabic(self, text: str, for_ctc: bool = False) -> str:
+    def _normalize_arabic(self, text: str) -> str:
         text = re.sub(r'[\u064B-\u065F\u06D6-\u06DC\u06DF-\u06E8\u06EA-\u06ED]', '', text)
-        if for_ctc:
-            text = re.sub(r'[أإآٱ]', 'ا', text)
-            text = re.sub(r'[^\u0621-\u064A\s]', '', text)
+        text = re.sub(r'[أإآٱ]', 'ا', text)
+        text = re.sub(r'[^\u0621-\u064A\s]', '', text)
         return text.strip()
-
-    def _load_wav2vec2(self):
-        if not self.wav2vec2_model:
-            print(f"Loading Wav2Vec2 model from {self.wav2vec2_model_id}...")
-            self.wav2vec2_processor = Wav2Vec2Processor.from_pretrained(self.wav2vec2_model_id)
-            self.wav2vec2_model = Wav2Vec2ForCTC.from_pretrained(self.wav2vec2_model_id).to(self.device)
-
-    def align_ctc(self, audio_data: np.ndarray, sr: int, words: list[str], offset: float = 0.0) -> list[dict]:
-        self._load_wav2vec2()
-        if sr != 16000:
-            audio_data = librosa.resample(audio_data, orig_sr=sr, target_sr=16000)
-            sr = 16000
-
-        duration = len(audio_data) / sr
-        audio_tensor = torch.from_numpy(audio_data).to(self.device)
-
-        chunk_size = 30 * 16000
-        all_log_probs = []
-
-        with torch.inference_mode():
-            for i in range(0, len(audio_tensor), chunk_size):
-                chunk = audio_tensor[i : i + chunk_size]
-                if len(chunk) < 400: continue
-                logits = self.wav2vec2_model(chunk.unsqueeze(0)).logits
-                log_probs = torch.log_softmax(logits, dim=-1).cpu()
-                all_log_probs.append(log_probs)
-            
-            if not all_log_probs:
-                return []
-            combined_log_probs = torch.cat(all_log_probs, dim=1)[0].numpy()
-
-        config = CtcSegmentationParameters()
-        config.index_duration = duration / combined_log_probs.shape[0]
-        
-        clean_words = [self._normalize_arabic(w, for_ctc=True) for w in words]
-        
-        # Tokenize words manually to bypass the library's buggy char_list mapping
-        ground_truth_ids_str = []
-        valid_words = []
-        for i, w in enumerate(clean_words):
-            if not w:
-                continue
-            ids = self.wav2vec2_processor.tokenizer(w, add_special_tokens=False).input_ids
-            ids_str = " ".join(str(token_id) for token_id in ids)
-            if ids_str:
-                ground_truth_ids_str.append(ids_str)
-                valid_words.append(words[i])
-        
-        if not ground_truth_ids_str:
-            return []
-
-        try:
-            # Passing a list of space-separated ID strings forces the library 
-            # to parse them as integers directly.
-            results = ctc_segmentation(config, combined_log_probs, ground_truth_ids_str)
-        except Exception as e:
-            print(f"[CTC-Seg] Local Error: {e}")
-            return []
-
-        word_alignments = []
-        for i, segment in enumerate(results):
-            word_alignments.append({
-                "word":       valid_words[i], 
-                "start":      round(float(segment[0]) + offset, 3),
-                "end":        round(float(segment[1]) + offset, 3),
-                "confidence": round(min(1.0, float(np.exp(segment[2]))), 2),
-            })
-        return word_alignments
 
     def transcribe(
         self,
@@ -158,9 +86,9 @@ class Whisperx(BaseTranscriber):
         dp = np.zeros((n + 1, m + 1))
         
         for i in range(1, n + 1):
-            rw = self._normalize_arabic(ref_words[i-1], for_ctc=True)
+            rw = self._normalize_arabic(ref_words[i-1])
             for j in range(1, m + 1):
-                ew = self._normalize_arabic(extracted_words[j-1]["word"], for_ctc=True)
+                ew = self._normalize_arabic(extracted_words[j-1]["word"])
                 match_score = fuzz.ratio(rw, ew) / 100.0
                 if match_score < 0.6: match_score = -1.0
                 dp[i][j] = max(
@@ -172,8 +100,8 @@ class Whisperx(BaseTranscriber):
         mapped_alignments = [None] * n
         i, j = n, m
         while i > 0 and j > 0:
-            rw = self._normalize_arabic(ref_words[i-1], for_ctc=True)
-            ew = self._normalize_arabic(extracted_words[j-1]["word"], for_ctc=True)
+            rw = self._normalize_arabic(ref_words[i-1])
+            ew = self._normalize_arabic(extracted_words[j-1]["word"])
             match_score = fuzz.ratio(rw, ew) / 100.0
             
             if match_score >= 0.6 and dp[i][j] == dp[i-1][j-1] + match_score:
@@ -208,50 +136,7 @@ class Whisperx(BaseTranscriber):
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
             
-        speech, sr = sf.read(str(audio_path), dtype='float32')
-        if len(speech.shape) > 1: speech = speech.mean(axis=1)
-        c_alignments = self.align_ctc(speech, sr, ref_words)
-        
-        final_alignments = []
-        c_idx = 0
-        
-        for w_entry in w_alignments:
-            word_text = self._normalize_arabic(w_entry["word"], for_ctc=True)
-            best_ctc = None
-            min_dist = 0.6 
-            
-            search_start = max(0, c_idx - 5)
-            search_end = min(len(c_alignments), c_idx + 10)
-            
-            for k in range(search_start, search_end):
-                c_entry = c_alignments[k]
-                c_text = self._normalize_arabic(c_entry["word"], for_ctc=True)
-                
-                if word_text == c_text:
-                    dist = abs(((w_entry["start"] + w_entry["end"])/2) - ((c_entry["start"] + c_entry["end"])/2))
-                    if dist < min_dist:
-                        best_ctc = c_entry
-                        min_dist = dist
-                        c_idx = k + 1 
-                        break
-            
-            if best_ctc and best_ctc["confidence"] > 0.4:
-                refined_start = best_ctc["start"]
-                refined_end = best_ctc["end"]
-                
-                if abs(refined_start - w_entry["start"]) > 0.5:
-                    refined_start = w_entry["start"]
-                if abs(refined_end - w_entry["end"]) > 0.5:
-                    refined_end = w_entry["end"]
-
-                final_alignments.append({
-                    "word": w_entry["word"],
-                    "start": round(refined_start, 3),
-                    "end": round(refined_end, 3),
-                    "confidence": max(w_entry["confidence"], best_ctc["confidence"])
-                })
-            else:
-                final_alignments.append(w_entry)
+        final_alignments = w_alignments
 
         try:
             total_duration = sf.info(str(audio_path)).duration
