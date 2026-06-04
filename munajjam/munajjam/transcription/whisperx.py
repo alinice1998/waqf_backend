@@ -77,21 +77,30 @@ class Whisperx(BaseTranscriber):
                 return []
             combined_log_probs = torch.cat(all_log_probs, dim=1)[0].numpy()
 
-        vocab = self.wav2vec2_processor.tokenizer.get_vocab()
-        inv_vocab = {v: k for k, v in vocab.items()}
-        char_list = [inv_vocab[i] for i in range(len(inv_vocab))]
-
-        config = CtcSegmentationParameters(char_list=char_list)
+        config = CtcSegmentationParameters()
         config.index_duration = duration / combined_log_probs.shape[0]
         
         clean_words = [self._normalize_arabic(w, for_ctc=True) for w in words]
-        clean_words = [w for w in clean_words if w]
         
-        if not clean_words:
+        # Tokenize words manually to bypass the library's buggy char_list mapping
+        ground_truth_ids_str = []
+        valid_words = []
+        for i, w in enumerate(clean_words):
+            if not w:
+                continue
+            ids = self.wav2vec2_processor.tokenizer(w, add_special_tokens=False).input_ids
+            ids_str = " ".join(str(token_id) for token_id in ids)
+            if ids_str:
+                ground_truth_ids_str.append(ids_str)
+                valid_words.append(words[i])
+        
+        if not ground_truth_ids_str:
             return []
 
         try:
-            results = ctc_segmentation(config, combined_log_probs, clean_words)
+            # Passing a list of space-separated ID strings forces the library 
+            # to parse them as integers directly.
+            results = ctc_segmentation(config, combined_log_probs, ground_truth_ids_str)
         except Exception as e:
             print(f"[CTC-Seg] Local Error: {e}")
             return []
@@ -99,7 +108,7 @@ class Whisperx(BaseTranscriber):
         word_alignments = []
         for i, segment in enumerate(results):
             word_alignments.append({
-                "word":       words[i], 
+                "word":       valid_words[i], 
                 "start":      round(float(segment[0]) + offset, 3),
                 "end":        round(float(segment[1]) + offset, 3),
                 "confidence": round(min(1.0, float(np.exp(segment[2]))), 2),
