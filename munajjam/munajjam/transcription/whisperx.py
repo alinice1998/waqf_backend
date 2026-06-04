@@ -81,8 +81,7 @@ class Whisperx(BaseTranscriber):
         inv_vocab = {v: k for k, v in vocab.items()}
         char_list = [inv_vocab[i] for i in range(len(inv_vocab))]
 
-        config = CtcSegmentationParameters()
-        config.char_list = char_list
+        config = CtcSegmentationParameters(char_list=char_list)
         config.index_duration = duration / combined_log_probs.shape[0]
         
         clean_words = [self._normalize_arabic(w, for_ctc=True) for w in words]
