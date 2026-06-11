@@ -66,6 +66,60 @@ class Whisperx(BaseTranscriber):
         audio = whisperx.load_audio(str(audio_path))
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
         
+        # --- Reference Text Injection ---
+        if result["segments"] and ref_words:
+            transcribed_words = []
+            for seg_idx, segment in enumerate(result["segments"]):
+                for w in segment["text"].split():
+                    transcribed_words.append({"word": w, "seg_idx": seg_idx})
+                    
+            n_ref = len(ref_words)
+            m_tr = len(transcribed_words)
+            if m_tr > 0:
+                dp_inj = np.zeros((n_ref + 1, m_tr + 1))
+                
+                for i in range(1, n_ref + 1):
+                    rw = self._normalize_arabic(ref_words[i-1])
+                    for j in range(1, m_tr + 1):
+                        ew = self._normalize_arabic(transcribed_words[j-1]["word"])
+                        match_score = fuzz.ratio(rw, ew) / 100.0
+                        if match_score < 0.6: match_score = -1.0
+                        dp_inj[i][j] = max(
+                            dp_inj[i-1][j],
+                            dp_inj[i][j-1],
+                            dp_inj[i-1][j-1] + match_score
+                        )
+                        
+                mapped_seg_indices = [None] * n_ref
+                i, j = n_ref, m_tr
+                while i > 0 and j > 0:
+                    rw = self._normalize_arabic(ref_words[i-1])
+                    ew = self._normalize_arabic(transcribed_words[j-1]["word"])
+                    match_score = fuzz.ratio(rw, ew) / 100.0
+                    
+                    if match_score >= 0.6 and dp_inj[i][j] == dp_inj[i-1][j-1] + match_score:
+                        mapped_seg_indices[i-1] = transcribed_words[j-1]["seg_idx"]
+                        i -= 1
+                        j -= 1
+                    elif dp_inj[i][j] == dp_inj[i-1][j]:
+                        i -= 1
+                    else:
+                        j -= 1
+                        
+                seg_ref_texts = {idx: [] for idx in range(len(result["segments"]))}
+                last_seg_idx = 0
+                for k in range(n_ref):
+                    if mapped_seg_indices[k] is not None:
+                        seg_idx = mapped_seg_indices[k]
+                        seg_ref_texts[seg_idx].append(ref_words[k])
+                        last_seg_idx = seg_idx
+                    else:
+                        seg_ref_texts[last_seg_idx].append(ref_words[k])
+                        
+                for idx, segment in enumerate(result["segments"]):
+                    segment["text"] = " ".join(seg_ref_texts[idx])
+        # --- End Injection ---
+        
         model_a, metadata = whisperx.load_align_model(language_code="ar", device=self.device)
         result = whisperx.align(result["segments"], model_a, metadata, audio, self.device, return_char_alignments=False)
         
