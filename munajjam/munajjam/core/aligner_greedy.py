@@ -179,6 +179,8 @@ def _finalize_ayah(
             # Retroactively update previous ayah's end to accommodate Madd Aaridh lis-Sukoon
             if ctx.results:
                 ctx.results[-1].end_time = ctx.prev_unbuffered_end + prev_buffer
+                if ctx.results[-1].words:
+                    ctx.results[-1].words[-1].end = ctx.results[-1].end_time
     else:
         # First ayah, just apply normal start buffer using silences
         best_silence_before = None
@@ -216,6 +218,18 @@ def _finalize_ayah(
     # Compute full similarity
     full_sim = similarity(merged_text, ayah.text)
 
+    # Extract and copy words so we can adjust their timestamps without mutating original segments
+    words_list = None
+    if merged_segments:
+        words_list = []
+        for s in merged_segments:
+            if s.words:
+                words_list.extend([w.model_copy() for w in s.words])
+        
+        if words_list:
+            words_list[0].start = buffered_start
+            words_list[-1].end = buffered_end
+
     result = AlignmentResult(
         ayah=ayah,
         start_time=buffered_start,
@@ -223,7 +237,7 @@ def _finalize_ayah(
         transcribed_text=merged_text,
         similarity_score=full_sim,
         overlap_detected=overlap_detected,
-        words=[w for s in merged_segments if s.words for w in s.words] if merged_segments else None,
+        words=words_list,
     )
 
     # Update context
