@@ -673,6 +673,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
                 transcribed_text=prev.transcribed_text,
                 similarity_score=prev.similarity_score,
                 overlap_detected=prev.overlap_detected,
+                words=prev.words,
             )
             results[i] = AlignmentResult(
                 ayah=curr.ayah,
@@ -681,6 +682,7 @@ def fix_overlaps(results: list[AlignmentResult], min_gap: float = 0.0) -> int:
                 transcribed_text=curr.transcribed_text,
                 similarity_score=curr.similarity_score,
                 overlap_detected=curr.overlap_detected,
+                words=curr.words,
             )
             fixes += 1
 
@@ -758,6 +760,7 @@ def snap_boundaries_to_silences(
                     transcribed_text=curr.transcribed_text,
                     similarity_score=curr.similarity_score,
                     overlap_detected=curr.overlap_detected,
+                    words=curr.words,
                 )
 
                 # Update next to start at silence end
@@ -768,6 +771,7 @@ def snap_boundaries_to_silences(
                     transcribed_text=next_r.transcribed_text,
                     similarity_score=next_r.similarity_score,
                     overlap_detected=next_r.overlap_detected,
+                    words=next_r.words,
                 )
 
                 snaps += 1

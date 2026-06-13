@@ -188,3 +188,53 @@ def convert_silences_to_seconds(
     silences_sec = [(s[0] / 1000, s[1] / 1000) for s in silences_ms]
     silences_sec.sort(key=lambda x: x[0])
     return silences_sec
+
+
+def distribute_gaps(results: list) -> None:
+    """
+    Distribute the gap between consecutive ayahs according to the gap distribution logic.
+    This modifies the AlignmentResult objects in-place.
+    
+    Logic:
+    - If gap <= 0.2s: Add all to current ayah's start.
+    - If gap <= 0.3s: Add 0.2s to current ayah's start, rest to previous ayah's end.
+    - If gap > 0.3s: Add 0.3s to current ayah's start, rest to previous ayah's end.
+    """
+    if not results:
+        return
+
+    # First ayah start buffer
+    first = results[0]
+    if first.start_time > 0:
+        buffer = min(0.3, first.start_time)
+        first.start_time = round(first.start_time - buffer, 3)
+        if hasattr(first, 'words') and first.words:
+            first.words[0].start = first.start_time
+
+    for i in range(1, len(results)):
+        prev = results[i-1]
+        curr = results[i]
+
+        gap = curr.start_time - prev.end_time
+
+        if gap > 0:
+            if gap <= 0.2:
+                curr_buffer = gap
+                prev_buffer = 0.0
+            elif gap <= 0.3:
+                curr_buffer = 0.2
+                prev_buffer = gap - 0.2
+            else:
+                curr_buffer = 0.3
+                prev_buffer = gap - 0.3
+
+            # Apply buffers
+            curr.start_time = round(curr.start_time - curr_buffer, 3)
+            prev.end_time = round(prev.end_time + prev_buffer, 3)
+
+            # Update word timestamps
+            if hasattr(curr, 'words') and curr.words:
+                curr.words[0].start = curr.start_time
+            if hasattr(prev, 'words') and prev.words:
+                prev.words[-1].end = prev.end_time
+

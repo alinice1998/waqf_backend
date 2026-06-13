@@ -154,6 +154,11 @@ class Aligner:
         if self.fix_overlaps and results:
             self._apply_overlap_fix(results)
 
+        # Apply gap distribution logic to Ayah and Word timestamps
+        if results:
+            from .overlap import distribute_gaps
+            distribute_gaps(results)
+
         return results
 
     def _align_greedy(
