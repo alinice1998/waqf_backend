@@ -202,6 +202,13 @@ class Whisperx(BaseTranscriber):
             buffer = min(0.3, first_start)
             final_alignments[0]["start"] = round(first_start - buffer, 3)
 
+        boundary_indices = set()
+        idx = -1
+        for ayah in ayahs:
+            ayah_words_count = len(ayah.text.split())
+            idx += ayah_words_count
+            boundary_indices.add(idx)
+
         for k in range(len(final_alignments)):
             if k > 0:
                 if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
@@ -212,19 +219,23 @@ class Whisperx(BaseTranscriber):
                 current_end = final_alignments[k]["end"]
                 gap = next_start - current_end
                 
-                if gap > 0:
-                    if gap <= 0.2:
-                        curr_buffer = gap
-                        prev_buffer = 0.0
-                    elif gap <= 0.3:
-                        curr_buffer = 0.2
-                        prev_buffer = gap - 0.2
-                    else:
-                        curr_buffer = 0.3
-                        prev_buffer = gap - 0.3
-                    
-                    final_alignments[k+1]["start"] = round(next_start - curr_buffer, 3)
-                    final_alignments[k]["end"] = round(current_end + prev_buffer, 3)
+                if k in boundary_indices:
+                    if gap > 0:
+                        if gap <= 0.2:
+                            curr_buffer = gap
+                            prev_buffer = 0.0
+                        elif gap <= 0.3:
+                            curr_buffer = 0.2
+                            prev_buffer = gap - 0.2
+                        else:
+                            curr_buffer = 0.3
+                            prev_buffer = gap - 0.3
+                        
+                        final_alignments[k+1]["start"] = round(next_start - curr_buffer, 3)
+                        final_alignments[k]["end"] = round(current_end + prev_buffer, 3)
+                else:
+                    if gap > 0.1:
+                        final_alignments[k]["end"] = round(next_start - 0.1, 3)
             else:
                 final_alignments[k]["end"] = round(total_duration, 3)
 
