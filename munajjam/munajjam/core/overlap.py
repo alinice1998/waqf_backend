@@ -118,16 +118,19 @@ def apply_buffers(
 
     if best_silence_after:
         silence_start, silence_end = best_silence_after
-        available_buffer = silence_end - end_time
-        buffer_to_apply = min(buffer, available_buffer)
-        buffer_end = end_time + buffer_to_apply
+        
+        limit_time = silence_end
+        if next_start is not None and next_start > end_time:
+            # Reserve up to `buffer` seconds for the next segment's start buffer
+            reserved_for_next = min(buffer, next_start - end_time)
+            limit_time = min(silence_end, next_start - reserved_for_next)
 
-        if next_start is None:
-            new_end = buffer_end
-        elif buffer_end <= next_start:
-            new_end = buffer_end
-        elif next_start > end_time:
-            new_end = min(buffer_end, next_start)
+        available_buffer = limit_time - end_time
+        if available_buffer > 0:
+            buffer_to_apply = min(buffer, available_buffer)
+            new_end = end_time + buffer_to_apply
+        else:
+            new_end = end_time
 
     return new_start, new_end
 
