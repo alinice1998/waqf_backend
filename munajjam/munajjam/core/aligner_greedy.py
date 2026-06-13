@@ -42,6 +42,7 @@ class AlignmentContext:
     current_segment_idx: int = 0
     current_ayah_idx: int = 0
     prev_ayah_end: float | None = None
+    prev_unbuffered_end: float | None = None
 
     # Results
     results: list[AlignmentResult] = field(default_factory=list)
@@ -158,15 +159,59 @@ def _finalize_ayah(
     if ayah is None:
         raise ValueError("No current ayah to finalize")
 
-    # Apply buffers
-    buffered_start, buffered_end = apply_buffers(
-        start_time,
-        end_time,
-        ctx.silences_ms,
-        prev_end=ctx.prev_ayah_end,
-        next_start=next_ayah_start,
-        buffer=ctx.settings.buffer_seconds,
-    )
+    # Apply buffers according to user's specified gap distribution rule
+    buffered_start = start_time
+    if ctx.prev_unbuffered_end is not None:
+        gap = start_time - ctx.prev_unbuffered_end
+        if gap > 0:
+            if gap <= 0.2:
+                curr_buffer = gap
+                prev_buffer = 0.0
+            elif gap <= 0.3:
+                curr_buffer = 0.2
+                prev_buffer = gap - 0.2
+            else:
+                curr_buffer = 0.3
+                prev_buffer = gap - 0.3
+
+            buffered_start = start_time - curr_buffer
+            
+            # Retroactively update previous ayah's end to accommodate Madd Aaridh lis-Sukoon
+            if ctx.results:
+                ctx.results[-1].end_time = ctx.prev_unbuffered_end + prev_buffer
+    else:
+        # First ayah, just apply normal start buffer using silences
+        best_silence_before = None
+        for s_start, s_end in ctx.silences_sec:
+            if s_end <= start_time:
+                if best_silence_before is None or s_end > best_silence_before[1]:
+                    best_silence_before = (s_start, s_end)
+            elif s_start > start_time:
+                break
+        
+        if best_silence_before:
+            available_buffer = start_time - best_silence_before[0]
+            curr_buffer = min(ctx.settings.buffer_seconds, available_buffer)
+            buffered_start = start_time - curr_buffer
+
+    # For the end of the current ayah, apply standard forward buffering
+    best_silence_after = None
+    for s_start, s_end in ctx.silences_sec:
+        if s_start >= end_time:
+            if best_silence_after is None or s_start < best_silence_after[0]:
+                best_silence_after = (s_start, s_end)
+        elif s_end < end_time:
+            continue
+
+    buffered_end = end_time
+    if best_silence_after:
+        available_buffer = best_silence_after[1] - end_time
+        buffer_to_apply = min(ctx.settings.buffer_seconds, available_buffer)
+        buffered_end = end_time + buffer_to_apply
+        
+        # Limit by next_ayah_start if provided
+        if next_ayah_start is not None and buffered_end > next_ayah_start:
+            buffered_end = next_ayah_start
 
     # Compute full similarity
     full_sim = similarity(merged_text, ayah.text)
@@ -184,6 +229,7 @@ def _finalize_ayah(
     # Update context
     ctx.results.append(result)
     ctx.prev_ayah_end = buffered_end
+    ctx.prev_unbuffered_end = end_time
     ctx.current_ayah_idx += 1
 
     if overlap_detected:
