@@ -1,0 +1,22 @@
+services:
+  munajjam-api:
+    build: .
+    image: munajjam-api:latest
+    container_name: munajjam-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # Optional: mount a directory to persist downloaded whisper models
+      - whisper_models:/root/.cache/huggingface
+    # Enable GPU support if available
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  whisper_models:

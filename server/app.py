@@ -1,0 +1,153 @@
+import os
+import uuid
+import gc
+import shutil
+import logging
+from concurrent.futures import ThreadPoolExecutor
+from fastapi import FastAPI, UploadFile, File, Form, BackgroundTasks
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+import soundfile as sf
+import torch
+
+# Munajjam imports
+from munajjam.transcription.whisperx import Whisperx
+from munajjam.core.aligner import align
+from munajjam.models.ayah import Ayah
+from munajjam.formatters import format_alignment_results
+
+from munajjam.data import load_surah_ayahs
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Munajjam Alignment API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+os.makedirs("temp_audio", exist_ok=True)
+
+jobs: dict = {}
+_executor = ThreadPoolExecutor(max_workers=1)
+
+def _run_job(job_id: str, file_path: str, surah_number: int):
+    """Runs the Munajjam alignment pipeline in a background thread."""
+    try:
+        jobs[job_id]["status"] = "processing"
+        
+        # 1. Load reference ayahs internally
+        ayahs = load_surah_ayahs(surah_number)
+        if not ayahs:
+            raise ValueError(f"Could not load reference ayahs for surah {surah_number}.")
+        
+        logger.info(f"[Job {job_id[:8]}] Surah: {surah_number}, Ayahs: {len(ayahs)}")
+
+        # 2. Transcribe
+        with Whisperx(model_name="large-v2", device="cuda") as transcriber:
+            segments = transcriber.transcribe(file_path, surah_id=surah_number)
+            
+        logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
+
+        # 3. Align using Munajjam's core
+        results = align(
+            audio_path=file_path,
+            segments=segments,
+            ayahs=ayahs,
+            strategy="auto"
+        )
+        
+        logger.info(f"[Job {job_id[:8]}] Aligned {len(results)} ayahs.")
+
+        # 4. Format results to match the API expectation
+        response_data = []
+        for r in results:
+            ayah_data = {
+                "ayah_number": r.ayah.ayah_number,
+                "start_time": r.start_time,
+                "end_time": r.end_time
+            }
+            if getattr(r, "words", None):
+                ayah_data["words"] = [{"word": w.word, "start": w.start, "end": w.end} for w in r.words]
+            response_data.append(ayah_data)
+
+        jobs[job_id] = {
+            "status": "success",
+            "data": response_data,
+            "error": None,
+        }
+        logger.info(f"[Job {job_id[:8]}] ✓ done")
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        jobs[job_id] = {
+            "status": "error",
+            "data": None,
+            "error": str(e),
+        }
+
+    finally:
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+        gc.collect()
+
+
+@app.post("/align/{surah_number}")
+async def align_audio(
+    surah_number: int,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(...),
+    riwaya: str = Form("hafs")
+):
+    job_id = str(uuid.uuid4())
+    file_path = f"temp_audio/temp_{job_id}_{surah_number}.mp3"
+
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    jobs[job_id] = {"status": "queued", "data": None, "error": None}
+
+    background_tasks.add_task(
+        lambda: _executor.submit(_run_job, job_id, file_path, surah_number)
+    )
+
+    return JSONResponse({
+        "status": "queued",
+        "job_id": job_id,
+        "message": "بدأت المهمة وسيتم فحصها تلقائياً.",
+    })
+
+@app.get("/align/status/{job_id}")
+async def get_job_status(job_id: str):
+    job = jobs.get(job_id)
+    if not job:
+        return JSONResponse({"status": "error", "message": "المهمة غير موجودة"}, status_code=404)
+
+    if job["status"] == "success":
+        return JSONResponse({
+            "status": "success",
+            "data": job["data"]
+        })
+    elif job["status"] == "error":
+        return JSONResponse({"status": "error", "message": job["error"]}, status_code=500)
+    else:
+        return JSONResponse({
+            "status": job["status"],
+            "message": "المعالجة مستمرة، يرجى الانتظار..."
+        })
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
