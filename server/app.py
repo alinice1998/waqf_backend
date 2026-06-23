@@ -67,14 +67,23 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
 
         # 4. Format results to match the API expectation
         response_data = []
+        
+        # Build a lookup for original segment words
+        seg_words_by_id = {s.id: getattr(s, "words", None) for s in segments if hasattr(s, 'id')}
+        
         for r in results:
             ayah_data = {
                 "ayah_number": r.ayah.ayah_number,
                 "start_time": r.start_time,
                 "end_time": r.end_time
             }
-            if getattr(r, "words", None):
-                ayah_data["words"] = [{"word": w.word, "start": w.start, "end": w.end} for w in r.words]
+            
+            words = getattr(r, "words", None)
+            if not words:
+                words = seg_words_by_id.get(r.ayah.ayah_number)
+                
+            if words:
+                ayah_data["words"] = [{"word": getattr(w, "word", w), "start": w.start, "end": w.end} for w in words]
             response_data.append(ayah_data)
 
         jobs[job_id] = {
