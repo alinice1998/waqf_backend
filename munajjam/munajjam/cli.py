@@ -2,8 +2,8 @@
 Command-line interface for Munajjam.
 
 Usage:
-    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>] [--whisper-backend <backend>]
-    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>] [--whisper-backend <backend>]
+    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
+    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>]
     munajjam --version
     munajjam --help
 """
@@ -15,7 +15,7 @@ from pathlib import Path
 
 from munajjam import __version__
 from munajjam.core.arabic import infer_surah_number
-from munajjam.transcription.whisperFactory import WhisperBackend, WhisperFactory
+from munajjam.transcription.whisperx import Whisperx
 
 # Valid surah range
 MIN_SURAH = 1
@@ -77,13 +77,7 @@ def create_parser() -> argparse.ArgumentParser:
         default="json",
         help="Output format (default: json)",
     )
-    align_parser.add_argument(
-        "--whisper-backend",
-        type=str,
-        choices=[b.value for b in WhisperBackend],
-        default=WhisperBackend.OPENAI.value,
-        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
-    )
+
     align_parser.add_argument(
         "--riwaya",
         type=str,
@@ -129,13 +123,7 @@ def create_parser() -> argparse.ArgumentParser:
         default="auto",
         help="Alignment strategy to use (default: auto)",
     )
-    batch_parser.add_argument(
-        "--whisper-backend",
-        type=str,
-        choices=[b.value for b in WhisperBackend],
-        default=WhisperBackend.OPENAI.value,
-        help=f"Whisper backend to use (default: {WhisperBackend.OPENAI.value})",
-    )
+
     batch_parser.add_argument(
         "--riwaya",
         type=str,
@@ -251,8 +239,7 @@ def cmd_align(args: argparse.Namespace) -> int:
 
     settings = configure(riwaya=args.riwaya)
 
-    transcriber = WhisperFactory().create_whisper(
-        backend=WhisperBackend(args.whisper_backend),
+    transcriber = Whisperx(
         model_name=settings.model_id,
         device=settings.device,
     )
@@ -294,8 +281,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
     settings = configure(riwaya=args.riwaya)
     print(f"Found {len(audio_files)} audio files to process.", file=sys.stderr)
     print(f"Riwaya: {args.riwaya}", file=sys.stderr)
-    transcriber = WhisperFactory().create_whisper(
-        backend=WhisperBackend(args.whisper_backend),
+    transcriber = Whisperx(
         model_name=settings.model_id,
         device=settings.device,
     )

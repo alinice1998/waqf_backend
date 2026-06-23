@@ -18,8 +18,13 @@ class BaseTranscriber(ABC):
     All transcriber implementations (Whisper, custom models, etc.)
     must implement this interface.
 
-        with WhisperTranscriber() as transcriber:
-            segments = transcriber.transcribe("surah_1.wav", surah_id=1)
+    Example:
+        class MyTranscriber(BaseTranscriber):
+            def transcribe(self, path, **kwargs):
+                return []
+        
+        transcriber = MyTranscriber()
+        segments = transcriber.transcribe("audio.wav", surah_id=1)
     """
 
     def __enter__(self) -> "BaseTranscriber":

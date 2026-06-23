@@ -43,19 +43,9 @@ class MunajjamSettings(BaseSettings):
         description="The Quranic Riwaya to use for reference text (hafs, warsh)",
     )
 
-    wav2vec2_model_id: str = Field(
-        default="jonatasgrosman/wav2vec2-large-xlsr-53-arabic",
-        description="HuggingFace model ID for Wav2Vec2 CTC alignment",
-    )
-
     device: Literal["auto", "cpu", "cuda", "mps"] = Field(
         default="auto",
         description="Device for model inference (auto, cpu, cuda, mps)",
-    )
-
-    model_type: Literal["transformers", "faster-whisper"] = Field(
-        default="faster-whisper",
-        description="Model backend type",
     )
 
     # ============ Audio Processing ============

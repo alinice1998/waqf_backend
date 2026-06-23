@@ -2,13 +2,13 @@
 مُنَجِّم (Munajjam) — A Python library to synchronize Quran Ayat with audio recitations.
 
 Usage:
-    from munajjam.transcription import WhisperTranscriber
+    from munajjam.transcription import Whisperx
     from munajjam.core import align_segments
     from munajjam.data import load_surah_ayahs
 
     # Transcribe
-    with WhisperTranscriber() as transcriber:
-        segments = transcriber.transcribe("surah_1.wav", surah_id=1)
+    transcriber = Whisperx(model_name="model_id")
+    segments = transcriber.transcribe("surah_1.wav", surah_id=1)
 
     # Align
     ayahs = load_surah_ayahs(1)

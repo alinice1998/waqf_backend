@@ -18,7 +18,6 @@ import whisperx
 from rapidfuzz import fuzz
 from pathlib import Path
 
-from munajjam.core.arabic import detect_segment_type
 from munajjam.models import Segment, WordTimestamp, SegmentType
 from munajjam.transcription.base import BaseTranscriber
 from munajjam.data import load_surah_ayahs
@@ -31,10 +30,6 @@ class Whisperx(BaseTranscriber):
         self.device = device
         self.compute_type = compute_type
         
-        settings = get_settings()
-        self.wav2vec2_model_id = settings.wav2vec2_model_id
-
-        self.whisper_model = None
         self.whisper_model = None
 
     def _normalize_arabic(self, text: str) -> str:
