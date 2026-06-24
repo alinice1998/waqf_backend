@@ -209,6 +209,8 @@ def distribute_gaps(results: list) -> None:
         buffer = min(0.3, first.start_time)
         first.start_time = round(first.start_time - buffer, 3)
         if hasattr(first, 'words') and first.words:
+            if first.words[0].original_start is None:
+                first.words[0].original_start = first.words[0].start
             first.words[0].start = first.start_time
 
     for i in range(1, len(results)):
@@ -234,7 +236,11 @@ def distribute_gaps(results: list) -> None:
 
             # Update word timestamps
             if hasattr(curr, 'words') and curr.words:
+                if curr.words[0].original_start is None:
+                    curr.words[0].original_start = curr.words[0].start
                 curr.words[0].start = curr.start_time
             if hasattr(prev, 'words') and prev.words:
+                if prev.words[-1].original_end is None:
+                    prev.words[-1].original_end = prev.words[-1].end
                 prev.words[-1].end = prev.end_time
 
