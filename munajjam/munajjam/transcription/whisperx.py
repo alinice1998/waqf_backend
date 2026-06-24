@@ -192,11 +192,6 @@ class Whisperx(BaseTranscriber):
         except Exception:
             total_duration = final_alignments[-1]["end"] + 2.0
 
-        if final_alignments and final_alignments[0]["start"] > 0:
-            first_start = final_alignments[0]["start"]
-            buffer = min(0.3, first_start)
-            final_alignments[0]["start"] = round(first_start - buffer, 3)
-
         boundary_indices = set()
         idx = -1
         for ayah in ayahs:
@@ -204,14 +199,24 @@ class Whisperx(BaseTranscriber):
             idx += ayah_words_count
             boundary_indices.add(idx)
 
-        for wa in final_alignments:
-            wa["original_start"] = wa["start"]
-            wa["original_end"] = wa["end"]
-
+        # 1. Fix overlaps first
         for k in range(len(final_alignments)):
             if k > 0:
                 if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
                     final_alignments[k]["start"] = final_alignments[k-1]["end"]
+
+        # 2. Capture original timings AFTER overlap resolution but BEFORE gap padding
+        for wa in final_alignments:
+            wa["original_start"] = wa["start"]
+            wa["original_end"] = wa["end"]
+
+        # 3. Apply Gap Distribution and Padding
+        if final_alignments and final_alignments[0]["start"] > 0:
+            first_start = final_alignments[0]["start"]
+            buffer = min(0.3, first_start)
+            final_alignments[0]["start"] = round(first_start - buffer, 3)
+
+        for k in range(len(final_alignments)):
             
             if k < len(final_alignments) - 1:
                 next_start = final_alignments[k+1]["start"]
