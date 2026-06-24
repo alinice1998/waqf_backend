@@ -199,54 +199,76 @@ class Whisperx(BaseTranscriber):
             idx += ayah_words_count
             boundary_indices.add(idx)
 
-        # 1. Fix overlaps first (TEMPORARILY DISABLED)
-        if False:
-            for k in range(len(final_alignments)):
-                if k > 0:
-                    if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
-                        final_alignments[k]["start"] = final_alignments[k-1]["end"]
+        # 1. Fix overlaps first
+        for k in range(len(final_alignments)):
+            if k > 0:
+                if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
+                    final_alignments[k]["start"] = final_alignments[k-1]["end"]
 
-        # 2. Capture original timings AFTER overlap resolution but BEFORE gap padding
+        # 1.5 Apply Silence Snapping to Restore True Gaps
+        try:
+            from .silence import detect_silences
+            silences = detect_silences(str(audio_path), min_silence_len=150, silence_thresh=-35)
+            silences_sec = [(s[0]/1000.0, s[1]/1000.0) for s in silences]
+            
+            for wa in final_alignments:
+                w_start = wa["start"]
+                w_end = wa["end"]
+                
+                for s_start, s_end in silences_sec:
+                    if s_start > w_start and s_start < w_end and s_end >= w_end:
+                        w_end = s_start
+                    elif s_start <= w_start and s_end > w_start and s_end < w_end:
+                        w_start = s_end
+                    elif s_start > w_start and s_end < w_end:
+                        w_end = s_start
+
+                if w_end > w_start:
+                    wa["start"] = round(w_start, 3)
+                    wa["end"] = round(w_end, 3)
+        except Exception:
+            pass
+
+        # 2. Capture original timings AFTER overlap resolution and silence snapping
         for wa in final_alignments:
             wa["original_start"] = wa["start"]
             wa["original_end"] = wa["end"]
 
-        # 3. Apply Gap Distribution and Padding (TEMPORARILY DISABLED)
-        if False:
-            if final_alignments and final_alignments[0]["start"] > 0:
-                first_start = final_alignments[0]["start"]
-                buffer = min(0.3, first_start)
-                final_alignments[0]["start"] = round(first_start - buffer, 3)
+        # 3. Apply Gap Distribution and Padding
+        if final_alignments and final_alignments[0]["start"] > 0:
+            first_start = final_alignments[0]["start"]
+            buffer = min(0.3, first_start)
+            final_alignments[0]["start"] = round(first_start - buffer, 3)
 
-            for k in range(len(final_alignments)):
+        for k in range(len(final_alignments)):
+            
+            if k < len(final_alignments) - 1:
+                next_start = final_alignments[k+1]["start"]
+                current_end = final_alignments[k]["end"]
+                gap = next_start - current_end
                 
-                if k < len(final_alignments) - 1:
-                    next_start = final_alignments[k+1]["start"]
-                    current_end = final_alignments[k]["end"]
-                    gap = next_start - current_end
-                    
-                    if k in boundary_indices:
-                        if gap > 0:
-                            if gap <= 0.2:
-                                curr_buffer = gap
-                                prev_buffer = 0.0
-                            elif gap <= 0.3:
-                                curr_buffer = 0.2
-                                prev_buffer = gap - 0.2
-                            else:
-                                curr_buffer = 0.3
-                                prev_buffer = gap - 0.3
-                            
-                            final_alignments[k+1]["start"] = round(next_start - curr_buffer, 3)
-                            final_alignments[k]["end"] = round(current_end + prev_buffer, 3)
-                    else:
-                        if gap > 0.1:
-                            final_alignments[k]["end"] = round(next_start - 0.1, 3)
+                if k in boundary_indices:
+                    if gap > 0:
+                        if gap <= 0.2:
+                            curr_buffer = gap
+                            prev_buffer = 0.0
+                        elif gap <= 0.3:
+                            curr_buffer = 0.2
+                            prev_buffer = gap - 0.2
+                        else:
+                            curr_buffer = 0.3
+                            prev_buffer = gap - 0.3
+                        
+                        final_alignments[k+1]["start"] = round(next_start - curr_buffer, 3)
+                        final_alignments[k]["end"] = round(current_end + prev_buffer, 3)
                 else:
-                    final_alignments[k]["end"] = round(total_duration, 3)
+                    if gap > 0.1:
+                        final_alignments[k]["end"] = round(next_start - 0.1, 3)
+            else:
+                final_alignments[k]["end"] = round(total_duration, 3)
 
-                if final_alignments[k]["end"] <= final_alignments[k]["start"]:
-                    final_alignments[k]["end"] = round(final_alignments[k]["start"] + 0.1, 3)
+            if final_alignments[k]["end"] <= final_alignments[k]["start"]:
+                final_alignments[k]["end"] = round(final_alignments[k]["start"] + 0.1, 3)
 
         word_idx = 0
         segments = []
