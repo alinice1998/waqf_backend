@@ -14,6 +14,8 @@ class WordTimestamp(BaseModel):
     start: float
     end: float
     probability: float = Field(default=0.0, ge=0.0, le=1.0)
+    original_start: float | None = Field(default=None)
+    original_end: float | None = Field(default=None)
 
 
 class SegmentType(str, Enum):
