@@ -209,6 +209,10 @@ class Whisperx(BaseTranscriber):
             idx += ayah_words_count
             boundary_indices.add(idx)
 
+        for wa in final_alignments:
+            wa["original_start"] = wa["start"]
+            wa["original_end"] = wa["end"]
+
         for k in range(len(final_alignments)):
             if k > 0:
                 if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
@@ -261,7 +265,9 @@ class Whisperx(BaseTranscriber):
                         word=wa["word"],
                         start=wa["start"],
                         end=wa["end"],
-                        probability=wa["confidence"]
+                        probability=wa["confidence"],
+                        original_start=wa.get("original_start"),
+                        original_end=wa.get("original_end")
                     )
                 )
                 avg_conf += wa["confidence"]
