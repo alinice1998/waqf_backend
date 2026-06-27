@@ -18,6 +18,7 @@ from waqf_backend.models.ayah import Ayah
 from waqf_backend.formatters import format_alignment_results
 
 from waqf_backend.data import load_surah_ayahs
+from waqf_backend.transcription.silence import detect_silences_adaptive
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -54,6 +55,16 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
             segments = transcriber.transcribe(file_path, surah_id=surah_number)
             
         logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
+        
+        # Detect raw silences for robust frontend Waqf segmentation
+        raw_silences_ms = detect_silences_adaptive(
+            file_path,
+            min_silence_len=150,
+            percentile=15.0,
+            smooth_kernel=7,
+            merge_gap_ms=80,
+        )
+        silences_sec = [[s[0]/1000.0, s[1]/1000.0] for s in raw_silences_ms]
 
         # 3. Align using WaqfBackend's core
         results = align(
@@ -89,6 +100,7 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
         jobs[job_id] = {
             "status": "success",
             "data": response_data,
+            "silences": silences_sec,
             "error": None,
         }
         logger.info(f"[Job {job_id[:8]}] ✓ done")
@@ -144,7 +156,8 @@ async def get_job_status(job_id: str):
     if job["status"] == "success":
         return JSONResponse({
             "status": "success",
-            "data": job["data"]
+            "data": job["data"],
+            "silences": job.get("silences", [])
         })
     elif job["status"] == "error":
         return JSONResponse({"status": "error", "message": job["error"]}, status_code=500)
