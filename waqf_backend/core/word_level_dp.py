@@ -34,6 +34,8 @@ class TranscribedWord:
     estimated_end: float
     segment_idx: int
     word_idx_in_segment: int
+    original_start: float | None = None
+    original_end: float | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -63,6 +65,8 @@ def build_word_stream(segments: list[Segment]) -> list[TranscribedWord]:
                         estimated_end=wt.end,
                         segment_idx=seg_idx,
                         word_idx_in_segment=word_idx,
+                        original_start=wt.original_start,
+                        original_end=wt.original_end,
                     )
                 )
             continue
@@ -711,6 +715,8 @@ def align_segments_word_dp(
                     word=w.text,
                     start=round(w.estimated_start, 3),
                     end=round(w.estimated_end, 3),
+                    original_start=w.original_start if w.original_start is not None else round(w.estimated_start, 3),
+                    original_end=w.original_end if w.original_end is not None else round(w.estimated_end, 3),
                 )
             )
 
