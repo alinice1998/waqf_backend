@@ -1,5 +1,5 @@
-"""
-Shared fixtures and test configuration for Waqf Backend tests.
+﻿"""
+Shared fixtures and test configuration for WaqfBackend tests.
 """
 
 import pytest

@@ -1,5 +1,5 @@
-"""
-Unit tests for Waqf Backend library.
+﻿"""
+Unit tests for WaqfBackend library.
 """
 
 from pathlib import Path

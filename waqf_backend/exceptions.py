@@ -1,14 +1,14 @@
-"""
-Custom exceptions for Waqf Backend library.
+﻿"""
+Custom exceptions for WaqfBackend library.
 
-All exceptions inherit from Waqf BackendError for easy catching of library-specific errors.
+All exceptions inherit from WaqfBackendError for easy catching of library-specific errors.
 """
 
 from typing import Any
 
 
-class Waqf BackendError(Exception):
-    """Base exception for all Waqf Backend errors."""
+class WaqfBackendError(Exception):
+    """Base exception for all WaqfBackend errors."""
 
     def __init__(self, message: str, context: dict[str, Any] | None = None) -> None:
         super().__init__(message)
@@ -22,7 +22,7 @@ class Waqf BackendError(Exception):
         return self.message
 
 
-class TranscriptionError(Waqf BackendError):
+class TranscriptionError(WaqfBackendError):
     """Raised when audio transcription fails."""
 
     def __init__(
@@ -38,7 +38,7 @@ class TranscriptionError(Waqf BackendError):
         self.audio_path = audio_path
 
 
-class AlignmentError(Waqf BackendError):
+class AlignmentError(WaqfBackendError):
     """Raised when ayah alignment fails."""
 
     def __init__(
@@ -58,7 +58,7 @@ class AlignmentError(Waqf BackendError):
         self.ayah_number = ayah_number
 
 
-class ConfigurationError(Waqf BackendError):
+class ConfigurationError(WaqfBackendError):
     """Raised when configuration is invalid."""
 
     def __init__(
@@ -91,7 +91,7 @@ class AudioFileError(TranscriptionError):
         super().__init__(message, audio_path=audio_path)
 
 
-class QuranDataError(Waqf BackendError):
+class QuranDataError(WaqfBackendError):
     """Raised when Quran reference data cannot be loaded."""
 
     def __init__(self, message: str = "Failed to load Quran reference data.") -> None:

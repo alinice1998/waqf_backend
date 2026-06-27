@@ -1,5 +1,5 @@
-"""
-مُنَجِّم (Waqf Backend) — A Python library to synchronize Quran Ayat with audio recitations.
+﻿"""
+مُنَجِّم (WaqfBackend) — A Python library to synchronize Quran Ayat with audio recitations.
 
 Usage:
     from waqf_backend.transcription import Whisperx
@@ -20,13 +20,13 @@ Usage:
 """
 
 from waqf_backend._version import __version__
-from waqf_backend.config import Waqf BackendSettings, configure, get_settings
+from waqf_backend.config import WaqfBackendSettings, configure, get_settings
 from waqf_backend.exceptions import (
     AlignmentError,
     AudioFileError,
     ConfigurationError,
     ModelNotLoadedError,
-    Waqf BackendError,
+    WaqfBackendError,
     QuranDataError,
     TranscriptionError,
 )
@@ -54,7 +54,7 @@ __all__ = [
     "Surah",
     "AlignmentResult",
     # Config
-    "Waqf BackendSettings",
+    "WaqfBackendSettings",
     "get_settings",
     "configure",
     # Formatters
@@ -63,7 +63,7 @@ __all__ = [
     "AlignmentMetadata",
     "format_alignment_results",
     # Exceptions
-    "Waqf BackendError",
+    "WaqfBackendError",
     "TranscriptionError",
     "AlignmentError",
     "ConfigurationError",

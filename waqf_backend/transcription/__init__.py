@@ -1,5 +1,5 @@
-"""
-Transcription module for Waqf Backend library.
+﻿"""
+Transcription module for WaqfBackend library.
 
 Provides abstract interface and implementations for audio transcription.
 

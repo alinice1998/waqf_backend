@@ -1,4 +1,4 @@
-"""
+﻿"""
 Advanced Configuration Example
 
 This example demonstrates advanced usage:
@@ -27,11 +27,11 @@ def main():
     audio_path = "Quran/badr_alturki_audio/114.wav"
     surah_number = 114
 
-    print("Advanced Waqf Backend Configuration Example")
+    print("Advanced WaqfBackend Configuration Example")
     print("=" * 80)
 
     # Step 1: Configure global settings
-    print("\nStep 1: Configuring Waqf Backend...")
+    print("\nStep 1: Configuring WaqfBackend...")
     configure(
         model_id="OdyAsh/faster-whisper-base-ar-quran",
         device="auto",  # Auto-detect GPU/CPU

@@ -1,6 +1,6 @@
-# Waqf Backend Test Suite
+﻿# WaqfBackend Test Suite
 
-This directory contains comprehensive unit and integration tests for the Waqf Backend library.
+This directory contains comprehensive unit and integration tests for the WaqfBackend library.
 
 ## Test Structure
 

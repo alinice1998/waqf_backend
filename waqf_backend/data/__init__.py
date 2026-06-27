@@ -1,5 +1,5 @@
-"""
-Quran data module for Waqf Backend library.
+﻿"""
+Quran data module for WaqfBackend library.
 
 Provides access to bundled Quran reference data (ayahs, surah metadata).
 """

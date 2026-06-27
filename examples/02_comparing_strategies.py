@@ -1,4 +1,4 @@
-"""
+﻿"""
 Comparing Alignment Strategies
 
 This example demonstrates the differences between the four alignment strategies:
@@ -60,7 +60,7 @@ def main():
     audio_path = "Quran/badr_alturki_audio/114.wav"
     surah_number = 114
 
-    print("Waqf Backend Alignment Strategy Comparison")
+    print("WaqfBackend Alignment Strategy Comparison")
     print("=" * 80)
 
     # Step 1: Transcribe once (shared across all strategies)

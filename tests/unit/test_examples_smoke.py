@@ -1,4 +1,4 @@
-"""
+﻿"""
 Smoke tests for example scripts.
 
 Verify that example scripts stay in sync with the library API.
@@ -458,7 +458,7 @@ class TestExample04BatchProcessing:
 # --------------- Smoke Tests: waqf_backend/examples/ ---------------
 
 
-class TestWaqf BackendExampleBasicUsage:
+class TestWaqfBackendExampleBasicUsage:
     """Smoke tests for waqf_backend/examples/basic_usage.py."""
 
     def test_process_surah_runs(
@@ -512,7 +512,7 @@ class TestWaqf BackendExampleBasicUsage:
                     del sys.modules["basic_usage"]
 
 
-class TestWaqf BackendExampleAlignment:
+class TestWaqfBackendExampleAlignment:
     """Smoke tests for waqf_backend/examples/example_alignment.py."""
 
     def test_core_functions_runs(

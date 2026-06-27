@@ -1,5 +1,5 @@
-"""
-Structured logging utilities for Waqf Backend library.
+﻿"""
+Structured logging utilities for WaqfBackend library.
 
 Provides a configured logger and helper functions for consistent logging.
 """
@@ -8,7 +8,7 @@ import logging
 import sys
 from typing import TextIO
 
-# Default format for Waqf Backend logs
+# Default format for WaqfBackend logs
 DEFAULT_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 DEFAULT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
@@ -33,7 +33,7 @@ def configure_logging(
     stream: TextIO | None = None,
 ) -> logging.Logger:
     """
-    Configure logging for the Waqf Backend library.
+    Configure logging for the WaqfBackend library.
 
     Args:
         level: Logging level (default: INFO)
@@ -67,12 +67,12 @@ def configure_logging(
 
 
 def enable_debug_logging() -> None:
-    """Enable debug-level logging for the Waqf Backend library."""
+    """Enable debug-level logging for the WaqfBackend library."""
     configure_logging(level=logging.DEBUG)
 
 
 def disable_logging() -> None:
-    """Disable all Waqf Backend logging."""
+    """Disable all WaqfBackend logging."""
     logger = logging.getLogger("waqf_backend")
     logger.handlers.clear()
     logger.addHandler(logging.NullHandler())

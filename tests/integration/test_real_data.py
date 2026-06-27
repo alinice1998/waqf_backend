@@ -1,5 +1,5 @@
-"""
-Integration tests for Waqf Backend library using real Quran data.
+﻿"""
+Integration tests for WaqfBackend library using real Quran data.
 """
 
 import pytest

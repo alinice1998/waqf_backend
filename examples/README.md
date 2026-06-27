@@ -1,6 +1,6 @@
-# Waqf Backend Examples
+﻿# WaqfBackend Examples
 
-This directory contains example scripts demonstrating various use cases of the Waqf Backend library.
+This directory contains example scripts demonstrating various use cases of the WaqfBackend library.
 
 ## Available Examples
 
@@ -8,7 +8,7 @@ This directory contains example scripts demonstrating various use cases of the W
 
 **Difficulty:** Beginner
 
-The simplest way to use Waqf Backend. Demonstrates:
+The simplest way to use WaqfBackend. Demonstrates:
 - Transcribing an audio file
 - Loading reference ayahs
 - Aligning segments to ayahs
@@ -66,7 +66,7 @@ python 03_advanced_configuration.py
 ```
 
 **Learn:**
-- How to configure Waqf Backend for specific needs
+- How to configure WaqfBackend for specific needs
 - How to use silence detection to improve alignment
 - How to inspect and debug alignment results
 - How to export results for further processing
@@ -99,7 +99,7 @@ python 04_batch_processing.py
 
 ## Before Running
 
-### 1. Install Waqf Backend
+### 1. Install WaqfBackend
 
 ```bash
 pip install waqf_backend
@@ -191,7 +191,7 @@ for result in results:
 
 ### Model Download Issues
 
-On first run, Waqf Backend downloads the Whisper model (~150MB). If you get download errors:
+On first run, WaqfBackend downloads the Whisper model (~150MB). If you get download errors:
 
 ```bash
 # Set Hugging Face cache directory (optional)
@@ -203,7 +203,7 @@ export TRANSFORMERS_OFFLINE=1
 
 ### GPU/CUDA Issues
 
-By default, Waqf Backend auto-detects your device. To force CPU:
+By default, WaqfBackend auto-detects your device. To force CPU:
 
 ```python
 from waqf_backend.config import configure

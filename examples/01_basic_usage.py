@@ -1,7 +1,7 @@
-"""
-Basic Usage Example for Waqf Backend
+﻿"""
+Basic Usage Example for WaqfBackend
 
-This example demonstrates the simplest way to use Waqf Backend:
+This example demonstrates the simplest way to use WaqfBackend:
 1. Transcribe an audio file
 2. Load reference ayahs
 3. Align segments to ayahs

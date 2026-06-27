@@ -1,8 +1,8 @@
-# Waqf Backend
+﻿# WaqfBackend
 
 **A Python library to synchronize Quran ayat with audio recitations.**
 
-Waqf Backend uses AI-powered speech recognition to automatically generate precise timestamps for each ayah in a Quran audio recording.
+WaqfBackend uses AI-powered speech recognition to automatically generate precise timestamps for each ayah in a Quran audio recording.
 
 ## Installation
 

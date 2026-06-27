@@ -1,3 +1,3 @@
-"""
-Test fixtures and data for Waqf Backend tests.
+﻿"""
+Test fixtures and data for WaqfBackend tests.
 """

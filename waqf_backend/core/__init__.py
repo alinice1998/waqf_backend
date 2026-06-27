@@ -1,5 +1,5 @@
-"""
-Core modules for Waqf Backend library.
+﻿"""
+Core modules for WaqfBackend library.
 
 This package contains the core business logic for:
 - Alignment of transcribed segments to Quran ayahs

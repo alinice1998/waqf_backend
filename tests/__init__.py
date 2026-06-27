@@ -1,5 +1,5 @@
-"""
-Waqf Backend Test Suite
+﻿"""
+WaqfBackend Test Suite
 """
 
 from pathlib import Path

@@ -1,5 +1,5 @@
-"""
-Pydantic data models for Waqf Backend library.
+﻿"""
+Pydantic data models for WaqfBackend library.
 
 These models represent the core data structures used throughout the library:
 - Ayah: A single verse from the Quran

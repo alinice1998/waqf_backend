@@ -1,5 +1,5 @@
-"""
-Command-line interface for Waqf Backend.
+﻿"""
+Command-line interface for WaqfBackend.
 
 Usage:
     waqf_backend align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
@@ -26,8 +26,8 @@ def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser for the waqf_backend CLI."""
     parser = argparse.ArgumentParser(
         prog="waqf_backend",
-        description="Waqf Backend — Synchronize Quran ayat with audio recitations.",
-        epilog="For more information, visit: https://github.com/Itqan-community/Waqf Backend",
+        description="WaqfBackend — Synchronize Quran ayat with audio recitations.",
+        epilog="For more information, visit: https://github.com/Itqan-community/WaqfBackend",
     )
 
     parser.add_argument(

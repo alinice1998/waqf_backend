@@ -1,5 +1,5 @@
-"""
-Standardized JSON output formatter for Waqf Backend.
+﻿"""
+Standardized JSON output formatter for WaqfBackend.
 
 This module provides a canonical JSON formatter that all consumers should use
 instead of hand-rolling their own JSON output format.
@@ -116,7 +116,7 @@ class AlignmentMetadata(BaseModel):
     )
     waqf_backend_version: str = Field(
         ...,
-        description="Version of Waqf Backend used for alignment",
+        description="Version of WaqfBackend used for alignment",
     )
     generated_at: str = Field(
         ...,
@@ -160,7 +160,7 @@ class AlignmentMetadata(BaseModel):
 
 class AlignmentOutput(BaseModel):
     """
-    Standardized output format for Waqf Backend alignment results.
+    Standardized output format for WaqfBackend alignment results.
 
     This is the canonical output format that all consumers should use.
     It includes metadata about the alignment process and a list of

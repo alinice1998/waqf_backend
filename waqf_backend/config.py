@@ -1,5 +1,5 @@
-"""
-Configuration management for Waqf Backend library.
+﻿"""
+Configuration management for WaqfBackend library.
 
 Uses Pydantic Settings for type-safe configuration with environment variable support.
 All settings can be overridden via environment variables with the WAQF_BACKEND_ prefix.
@@ -12,9 +12,9 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Waqf BackendSettings(BaseSettings):
+class WaqfBackendSettings(BaseSettings):
     """
-    Configuration settings for Waqf Backend library.
+    Configuration settings for WaqfBackend library.
 
     All settings can be overridden via environment variables with WAQF_BACKEND_ prefix.
 
@@ -169,23 +169,23 @@ class Waqf BackendSettings(BaseSettings):
 
 
 # Default settings instance
-_default_settings: Waqf BackendSettings | None = None
+_default_settings: WaqfBackendSettings | None = None
 
 
-def get_settings() -> Waqf BackendSettings:
+def get_settings() -> WaqfBackendSettings:
     """
     Get the default settings instance (lazily created).
 
     Returns:
-        Waqf BackendSettings: The default settings
+        WaqfBackendSettings: The default settings
     """
     global _default_settings
     if _default_settings is None:
-        _default_settings = Waqf BackendSettings()
+        _default_settings = WaqfBackendSettings()
     return _default_settings
 
 
-def configure(**kwargs: Any) -> Waqf BackendSettings:
+def configure(**kwargs: Any) -> WaqfBackendSettings:
     """
     Create and set new default settings.
 
@@ -193,8 +193,8 @@ def configure(**kwargs: Any) -> Waqf BackendSettings:
         **kwargs: Settings to override
 
     Returns:
-        Waqf BackendSettings: The new settings instance
+        WaqfBackendSettings: The new settings instance
     """
     global _default_settings
-    _default_settings = Waqf BackendSettings(**kwargs)
+    _default_settings = WaqfBackendSettings(**kwargs)
     return _default_settings
