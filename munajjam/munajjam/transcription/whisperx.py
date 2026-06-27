@@ -56,7 +56,18 @@ class Whisperx(BaseTranscriber):
         
         if not self.whisper_model:
             print(f"Loading WhisperX model {self.model_name}...")
-            self.whisper_model = whisperx.load_model(self.model_name, self.device, compute_type=self.compute_type, language="ar")
+            vad_options = {
+                "vad_onset": 0.500,
+                "vad_offset": 0.363,
+                "min_silence_duration_ms": 300
+            }
+            self.whisper_model = whisperx.load_model(
+                self.model_name,
+                self.device,
+                compute_type=self.compute_type,
+                language="ar",
+                vad_options=vad_options
+            )
         
         audio = whisperx.load_audio(str(audio_path))
         result = self.whisper_model.transcribe(audio, batch_size=batch_size)
@@ -205,31 +216,7 @@ class Whisperx(BaseTranscriber):
                 if final_alignments[k]["start"] < final_alignments[k-1]["end"]:
                     final_alignments[k]["start"] = final_alignments[k-1]["end"]
 
-        # 1.5 Apply Silence Snapping to Restore True Gaps
-        try:
-            from .silence import detect_silences
-            silences = detect_silences(str(audio_path), min_silence_len=150, silence_thresh=-35)
-            silences_sec = [(s[0]/1000.0, s[1]/1000.0) for s in silences]
-            
-            for wa in final_alignments:
-                w_start = wa["start"]
-                w_end = wa["end"]
-                
-                for s_start, s_end in silences_sec:
-                    if s_start > w_start and s_start < w_end and s_end >= w_end:
-                        w_end = s_start
-                    elif s_start <= w_start and s_end > w_start and s_end < w_end:
-                        w_start = s_end
-                    elif s_start > w_start and s_end < w_end:
-                        w_end = s_start
-
-                if w_end > w_start:
-                    wa["start"] = round(w_start, 3)
-                    wa["end"] = round(w_end, 3)
-        except Exception:
-            pass
-
-        # 2. Capture original timings AFTER overlap resolution and silence snapping
+        # 2. Capture original timings AFTER overlap resolution
         for wa in final_alignments:
             wa["original_start"] = wa["start"]
             wa["original_end"] = wa["end"]
