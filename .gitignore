@@ -117,13 +117,13 @@ cache/
 # Generated JSON files (alignment outputs)
 # Allow example outputs in waqf_backend/examples
 *.json
-!waqf_backend/examples/*.json
-!waqf_backend/waqf_backend/data/*.json
+!examples/*.json
+!waqf_backend/data/*.json
 
 # Generated HTML/CSV (analysis outputs)
 *.html
 *.csv
-!waqf_backend/waqf_backend/data/*.csv
+!waqf_backend/data/*.csv
 batch_process.py
 *.mp3
 
