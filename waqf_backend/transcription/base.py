@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from types import TracebackType
 
-from munajjam.models import Segment
+from waqf_backend.models import Segment
 
 
 class BaseTranscriber(ABC):

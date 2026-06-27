@@ -1,16 +1,16 @@
-# Munajjam
+# Waqf Backend
 
 **A Python library to synchronize Quran ayat with audio recitations.**
 
-Munajjam uses AI-powered speech recognition to automatically generate precise timestamps for each ayah in a Quran audio recording.
+Waqf Backend uses AI-powered speech recognition to automatically generate precise timestamps for each ayah in a Quran audio recording.
 
 ## Installation
 
 Clone the repository:
 
 ```bash
-git clone https://github.com/Itqan-community/munajjam.git
-cd munajjam/munajjam
+git clone https://github.com/Itqan-community/waqf_backend.git
+cd waqf_backend/waqf_backend
 ```
 
 Install the package:
@@ -47,9 +47,9 @@ curl -L -o 001.mp3 "https://pub-9ee413c8af4041c6bd5223d08f5d0f0f.r2.dev/media/up
 ### 2. Run the alignment
 
 ```python
-from munajjam.transcription import WhisperTranscriber
-from munajjam.core import align
-from munajjam.data import load_surah_ayahs
+from waqf_backend.transcription import WhisperTranscriber
+from waqf_backend.core import align
+from waqf_backend.data import load_surah_ayahs
 
 # Transcribe audio
 with WhisperTranscriber() as transcriber:
@@ -91,7 +91,7 @@ Ayah 7: 33.98s - 46.44s
 The default `auto` strategy works best for most cases. You can override it:
 
 ```python
-from munajjam.core import Aligner
+from waqf_backend.core import Aligner
 
 # Auto (recommended) - picks the best strategy, full pipeline by default
 aligner = Aligner("001.mp3")
@@ -125,7 +125,7 @@ See the [examples](./examples) directory for more usage patterns:
 
 ## Community
 
-- [Website](https://munajjam.itqan.dev)
+- [Website](https://waqf_backend.itqan.dev)
 - [ITQAN Community](https://community.itqan.dev)
 
 ## Acknowledgments

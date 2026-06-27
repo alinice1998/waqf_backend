@@ -8,20 +8,20 @@ with reference Quran ayahs (verses).
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-from munajjam.config import MunajjamSettings, get_settings
-from munajjam.core.arabic import detect_special_type, normalize_arabic
-from munajjam.core.matcher import (
+from waqf_backend.config import Waqf BackendSettings, get_settings
+from waqf_backend.core.arabic import detect_special_type, normalize_arabic
+from waqf_backend.core.matcher import (
     compute_coverage_ratio,
     get_first_last_words,
     similarity,
 )
-from munajjam.core.overlap import (
+from waqf_backend.core.overlap import (
     apply_buffers,
     convert_silences_to_seconds,
     find_silence_gap_between,
     remove_overlap,
 )
-from munajjam.models import AlignmentResult, Ayah, Segment
+from waqf_backend.models import AlignmentResult, Ayah, Segment
 
 
 @dataclass
@@ -36,7 +36,7 @@ class AlignmentContext:
     ayahs: list[Ayah]
     segments: list[Segment]
     silences_ms: list[list[int] | tuple[int, int]] = field(default_factory=list)
-    settings: MunajjamSettings = field(default_factory=get_settings)
+    settings: Waqf BackendSettings = field(default_factory=get_settings)
 
     # Progress tracking
     current_segment_idx: int = 0
@@ -98,7 +98,7 @@ def _get_n_check_words(ayah_text: str) -> int:
 def _check_end_of_ayah(
     merged_text: str,
     ayah: Ayah,
-    settings: MunajjamSettings,
+    settings: Waqf BackendSettings,
 ) -> tuple[bool, float]:
     """
     Check if merged text represents the end of an ayah.
@@ -124,7 +124,7 @@ def _check_end_of_ayah(
 def _check_next_ayah_starts(
     next_segment: Segment,
     next_ayah: Ayah,
-    settings: MunajjamSettings,
+    settings: Waqf BackendSettings,
 ) -> bool:
     """Check if the next segment starts the next ayah.
 
@@ -204,7 +204,7 @@ def align_segments(
     segments: list[Segment],
     ayahs: list[Ayah],
     silences_ms: list[list[int] | tuple[int, int]] | None = None,
-    settings: MunajjamSettings | None = None,
+    settings: Waqf BackendSettings | None = None,
     on_ayah_aligned: Callable[[AlignmentResult], None] | None = None,
     required_tokens_map: dict[tuple[int, int], list[str]] | None = None,
 ) -> list[AlignmentResult]:

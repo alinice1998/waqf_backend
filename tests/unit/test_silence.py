@@ -3,7 +3,7 @@ Unit tests for silence detection.
 """
 
 import pytest
-from munajjam.transcription.silence import detect_silences
+from waqf_backend.transcription.silence import detect_silences
 
 
 class TestDetectSilences:

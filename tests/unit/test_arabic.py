@@ -3,7 +3,7 @@ Unit tests for Arabic text normalization.
 """
 
 import pytest
-from munajjam.core.arabic import normalize_arabic
+from waqf_backend.core.arabic import normalize_arabic
 
 
 class TestArabicNormalization:

@@ -10,7 +10,7 @@ WORKDIR /app
 # Copy project files
 COPY . .
 
-# Install Munajjam and WhisperX
+# Install Waqf Backend and WhisperX
 RUN pip install --no-cache-dir git+https://github.com/m-bain/whisperx.git && \
     pip install --no-cache-dir . && \
     pip install "numpy<2"

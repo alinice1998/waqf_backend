@@ -1,8 +1,8 @@
-"""Tests for the munajjam CLI entry point."""
+"""Tests for the waqf_backend CLI entry point."""
 
 import pytest
 from unittest.mock import MagicMock
-from munajjam.cli import (
+from waqf_backend.cli import (
     create_parser,
     main,
     infer_surah_number,
@@ -17,7 +17,7 @@ class TestCreateParser:
     def test_parser_exists(self):
         parser = create_parser()
         assert parser is not None
-        assert parser.prog == "munajjam"
+        assert parser.prog == "waqf_backend"
 
     def test_version_flag(self, capsys):
         parser = create_parser()
@@ -253,7 +253,7 @@ class TestWriteOutput:
 
     def test_write_to_stderr(self, capsys, tmp_path):
         """Status message 'Results written to...' should go to stderr, not stdout."""
-        from munajjam.cli import _write_output
+        from waqf_backend.cli import _write_output
 
         output_file = tmp_path / "output.json"
         _write_output("test content", str(output_file))
@@ -266,7 +266,7 @@ class TestWriteOutput:
 
     def test_write_to_stdout(self, capsys):
         """When no output path, content should go to stdout."""
-        from munajjam.cli import _write_output
+        from waqf_backend.cli import _write_output
 
         _write_output("test content", None)
 

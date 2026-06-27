@@ -1,10 +1,10 @@
 """
-Shared fixtures and test configuration for Munajjam tests.
+Shared fixtures and test configuration for Waqf Backend tests.
 """
 
 import pytest
-from munajjam.models import Segment, SegmentType, Ayah
-from munajjam.data import load_surah_ayahs
+from waqf_backend.models import Segment, SegmentType, Ayah
+from waqf_backend.data import load_surah_ayahs
 
 
 @pytest.fixture

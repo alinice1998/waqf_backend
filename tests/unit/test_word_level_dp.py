@@ -2,8 +2,8 @@
 Unit tests for word-level DP alignment.
 """
 
-from munajjam.core.word_level_dp import align_segments_word_dp
-from munajjam.models import AlignmentResult
+from waqf_backend.core.word_level_dp import align_segments_word_dp
+from waqf_backend.models import AlignmentResult
 
 
 class TestAlignSegmentsWordDp:

@@ -10,10 +10,10 @@ import os
 from functools import lru_cache
 from pathlib import Path
 
-from munajjam.exceptions import QuranDataError
-from munajjam.models import Ayah, Surah
-from munajjam.models.surah import SURAH_AYAH_COUNTS, SURAH_NAMES
-from munajjam.config import get_settings
+from waqf_backend.exceptions import QuranDataError
+from waqf_backend.models import Ayah, Surah
+from waqf_backend.models.surah import SURAH_AYAH_COUNTS, SURAH_NAMES
+from waqf_backend.config import get_settings
 
 
 def _get_data_path() -> Path:

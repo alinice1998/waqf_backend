@@ -20,14 +20,14 @@ jobs:
         run: pip install build
 
       - name: Build package
-        working-directory: ./munajjam
+        working-directory: ./waqf_backend
         run: python -m build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: munajjam/dist/
+          path: waqf_backend/dist/
 
   attach-release-assets:
     runs-on: ubuntu-latest

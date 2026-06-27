@@ -9,11 +9,11 @@ This example demonstrates advanced usage:
 - Detailed result inspection
 """
 
-from munajjam.config import configure
-from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs
-from munajjam.formatters import format_alignment_results
-from munajjam.transcription import WhisperTranscriber, detect_silences
+from waqf_backend.config import configure
+from waqf_backend.core import Aligner
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.formatters import format_alignment_results
+from waqf_backend.transcription import WhisperTranscriber, detect_silences
 
 
 def progress_callback(current, total):
@@ -27,11 +27,11 @@ def main():
     audio_path = "Quran/badr_alturki_audio/114.wav"
     surah_number = 114
 
-    print("Advanced Munajjam Configuration Example")
+    print("Advanced Waqf Backend Configuration Example")
     print("=" * 80)
 
     # Step 1: Configure global settings
-    print("\nStep 1: Configuring Munajjam...")
+    print("\nStep 1: Configuring Waqf Backend...")
     configure(
         model_id="OdyAsh/faster-whisper-base-ar-quran",
         device="auto",  # Auto-detect GPU/CPU
@@ -61,7 +61,7 @@ def main():
     print(f"  Found {len(segments)} segments")
 
     # Inspect segment types
-    from munajjam.models import SegmentType
+    from waqf_backend.models import SegmentType
 
     ayah_segments = [s for s in segments if s.type == SegmentType.AYAH]
     istiadha_segments = [s for s in segments if s.type == SegmentType.ISTIADHA]

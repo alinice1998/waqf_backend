@@ -11,7 +11,7 @@ from typing import Any
 
 import logging
 
-logger = logging.getLogger("munajjam.silence")
+logger = logging.getLogger("waqf_backend.silence")
 
 
 # ═══════════════════════════════════════════════════════════════════════════

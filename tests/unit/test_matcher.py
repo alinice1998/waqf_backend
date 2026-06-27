@@ -3,7 +3,7 @@ Unit tests for text similarity matching.
 """
 
 import pytest
-from munajjam.core.matcher import similarity
+from waqf_backend.core.matcher import similarity
 
 
 class TestSimilarity:

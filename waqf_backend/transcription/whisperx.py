@@ -18,10 +18,10 @@ import whisperx
 from rapidfuzz import fuzz
 from pathlib import Path
 
-from munajjam.models import Segment, WordTimestamp, SegmentType
-from munajjam.transcription.base import BaseTranscriber
-from munajjam.data import load_surah_ayahs
-from munajjam.config import get_settings
+from waqf_backend.models import Segment, WordTimestamp, SegmentType
+from waqf_backend.transcription.base import BaseTranscriber
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.config import get_settings
 
 
 class Whisperx(BaseTranscriber):
@@ -209,7 +209,7 @@ class Whisperx(BaseTranscriber):
         try:
             from .silence import detect_silences_adaptive
             import logging
-            _snap_logger = logging.getLogger("munajjam.whisperx")
+            _snap_logger = logging.getLogger("waqf_backend.whisperx")
 
             # Use adaptive detection — automatically adapts to reverb/noise
             silences = detect_silences_adaptive(
@@ -243,7 +243,7 @@ class Whisperx(BaseTranscriber):
                     wa["end"] = round(w_end, 3)
         except Exception as e:
             import logging
-            logging.getLogger("munajjam.whisperx").warning(
+            logging.getLogger("waqf_backend.whisperx").warning(
                 f"Silence snapping skipped: {e}"
             )
 

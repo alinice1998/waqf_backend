@@ -1,5 +1,5 @@
 """
-Transcription module for Munajjam library.
+Transcription module for Waqf Backend library.
 
 Provides abstract interface and implementations for audio transcription.
 
@@ -7,8 +7,8 @@ Note: Whisperx is imported lazily to avoid requiring the whisperx
 package in environments that only need silence detection or base classes.
 """
 
-from munajjam.transcription.base import BaseTranscriber
-from munajjam.transcription.silence import (
+from waqf_backend.transcription.base import BaseTranscriber
+from waqf_backend.transcription.silence import (
     detect_non_silent_chunks,
     detect_silences,
     detect_silences_adaptive,
@@ -18,7 +18,7 @@ from munajjam.transcription.silence import (
 def __getattr__(name: str):
     """Lazy import for Whisperx to avoid requiring whisperx package at import time."""
     if name == "Whisperx":
-        from munajjam.transcription.whisperx import Whisperx
+        from waqf_backend.transcription.whisperx import Whisperx
         return Whisperx
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

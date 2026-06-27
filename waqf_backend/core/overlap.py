@@ -7,7 +7,7 @@ text between adjacent segments, and for applying timing buffers.
 
 from collections import Counter
 
-from munajjam.core.arabic import normalize_arabic
+from waqf_backend.core.arabic import normalize_arabic
 
 
 def remove_overlap(text1: str, text2: str) -> tuple[str, bool]:

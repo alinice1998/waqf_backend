@@ -1,11 +1,11 @@
 """
-Standardized JSON output formatter for Munajjam.
+Standardized JSON output formatter for Waqf Backend.
 
 This module provides a canonical JSON formatter that all consumers should use
 instead of hand-rolling their own JSON output format.
 
 Usage:
-    from munajjam.formatters import format_alignment_results, AlignmentOutput
+    from waqf_backend.formatters import format_alignment_results, AlignmentOutput
 
     # Format results to a standardized dict
     output = format_alignment_results(
@@ -30,10 +30,10 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from munajjam._version import __version__
-from munajjam.models.result import AlignmentResult
-from munajjam.models.surah import SURAH_NAMES
-from munajjam.models.segment import WordTimestamp
+from waqf_backend._version import __version__
+from waqf_backend.models.result import AlignmentResult
+from waqf_backend.models.surah import SURAH_NAMES
+from waqf_backend.models.segment import WordTimestamp
 
 
 class FormattedAyahResult(BaseModel):
@@ -114,9 +114,9 @@ class AlignmentMetadata(BaseModel):
         default="1.0",
         description="Schema version of this output format",
     )
-    munajjam_version: str = Field(
+    waqf_backend_version: str = Field(
         ...,
-        description="Version of Munajjam used for alignment",
+        description="Version of Waqf Backend used for alignment",
     )
     generated_at: str = Field(
         ...,
@@ -160,7 +160,7 @@ class AlignmentMetadata(BaseModel):
 
 class AlignmentOutput(BaseModel):
     """
-    Standardized output format for Munajjam alignment results.
+    Standardized output format for Waqf Backend alignment results.
 
     This is the canonical output format that all consumers should use.
     It includes metadata about the alignment process and a list of
@@ -270,7 +270,7 @@ def format_alignment_results(
         An AlignmentOutput instance with metadata and formatted results.
 
     Example:
-        >>> from munajjam.formatters import format_alignment_results
+        >>> from waqf_backend.formatters import format_alignment_results
         >>> output = format_alignment_results(results, surah_id=1)
         >>> print(output.to_json())
     """
@@ -287,7 +287,7 @@ def format_alignment_results(
         surah_name = SURAH_NAMES.get(surah_id)
 
     metadata = AlignmentMetadata(
-        munajjam_version=__version__,
+        waqf_backend_version=__version__,
         generated_at=datetime.now(timezone.utc).isoformat(),
         surah_id=surah_id,
         surah_name=surah_name,

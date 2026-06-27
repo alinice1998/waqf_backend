@@ -39,17 +39,17 @@ jobs:
             "ruff>=0.1.0" \
             "mypy>=1.0.0"
           # Install package itself without heavy optional deps
-          pip install -e ./munajjam --no-deps
+          pip install -e ./waqf_backend --no-deps
 
       - name: Lint with ruff
-        working-directory: ./munajjam
+        working-directory: ./waqf_backend
         run: |
           ruff check .
           ruff format --check .
 
       - name: Type check with mypy
-        working-directory: ./munajjam
-        run: mypy munajjam --ignore-missing-imports
+        working-directory: ./waqf_backend
+        run: mypy waqf_backend --ignore-missing-imports
 
       - name: Run tests
         run: pytest tests/unit/ -v --tb=short
@@ -71,10 +71,10 @@ jobs:
         run: pip install build
 
       - name: Build package
-        run: python -m build ./munajjam
+        run: python -m build ./waqf_backend
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: munajjam/dist/
+          path: waqf_backend/dist/

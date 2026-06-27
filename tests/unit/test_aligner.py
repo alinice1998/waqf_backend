@@ -3,7 +3,7 @@ Unit tests for alignment strategies.
 """
 
 import pytest
-from munajjam.core import Aligner, align
+from waqf_backend.core import Aligner, align
 
 # Tests use synthetic data — no real audio file, so disable acoustic features.
 DUMMY_AUDIO = "test.wav"

@@ -2,7 +2,7 @@
 Unit tests for phonetic similarity scoring.
 """
 
-from munajjam.core.phonetic import phonetic_word_similarity, phonetic_similarity
+from waqf_backend.core.phonetic import phonetic_word_similarity, phonetic_similarity
 
 
 class TestPhoneticWordSimilarity:

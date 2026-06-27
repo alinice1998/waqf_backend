@@ -10,15 +10,15 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from munajjam.formatters import (
+from waqf_backend.formatters import (
     AlignmentMetadata,
     AlignmentOutput,
     FormattedAyahResult,
     _format_single_result,
     format_alignment_results,
 )
-from munajjam.models.ayah import Ayah
-from munajjam.models.result import AlignmentResult
+from waqf_backend.models.ayah import Ayah
+from waqf_backend.models.result import AlignmentResult
 
 # --- Fixtures ---
 
@@ -218,7 +218,7 @@ class TestFormatAlignmentResults:
         assert meta.reciter == "Test Reciter"
         assert meta.audio_file == "test.wav"
         assert meta.total_ayahs == 4
-        assert meta.munajjam_version is not None
+        assert meta.waqf_backend_version is not None
         assert meta.generated_at is not None
 
     def test_metadata_optional_fields(self, sample_results):
@@ -326,7 +326,7 @@ class TestAlignmentOutput:
         data = output.to_dict()
         expected_keys = {
             "schema_version",
-            "munajjam_version",
+            "waqf_backend_version",
             "generated_at",
             "surah_id",
             "surah_name",
@@ -366,7 +366,7 @@ class TestFrozenModels:
 
     def test_alignment_metadata_is_frozen(self):
         meta = AlignmentMetadata(
-            munajjam_version="0.1.0",
+            waqf_backend_version="0.1.0",
             generated_at="2024-01-01T00:00:00+00:00",
             total_ayahs=1,
             total_duration=5.0,
@@ -698,7 +698,7 @@ class TestAdversarialMetadataSurahIdConstraint:
         """surah_id=0 is rejected by AlignmentMetadata (ge=1)."""
         with pytest.raises(ValidationError, match="surah_id"):
             AlignmentMetadata(
-                munajjam_version="0.1.0",
+                waqf_backend_version="0.1.0",
                 generated_at="2024-01-01T00:00:00+00:00",
                 surah_id=0,
                 total_ayahs=1,
@@ -711,7 +711,7 @@ class TestAdversarialMetadataSurahIdConstraint:
         """surah_id=-1 is rejected by AlignmentMetadata (ge=1)."""
         with pytest.raises(ValidationError, match="surah_id"):
             AlignmentMetadata(
-                munajjam_version="0.1.0",
+                waqf_backend_version="0.1.0",
                 generated_at="2024-01-01T00:00:00+00:00",
                 surah_id=-1,
                 total_ayahs=1,
@@ -724,7 +724,7 @@ class TestAdversarialMetadataSurahIdConstraint:
         """surah_id=115 is rejected by AlignmentMetadata (le=114)."""
         with pytest.raises(ValidationError, match="surah_id"):
             AlignmentMetadata(
-                munajjam_version="0.1.0",
+                waqf_backend_version="0.1.0",
                 generated_at="2024-01-01T00:00:00+00:00",
                 surah_id=115,
                 total_ayahs=1,
@@ -736,7 +736,7 @@ class TestAdversarialMetadataSurahIdConstraint:
     def test_metadata_accepts_surah_id_none(self):
         """surah_id=None is valid (optional field)."""
         meta = AlignmentMetadata(
-            munajjam_version="0.1.0",
+            waqf_backend_version="0.1.0",
             generated_at="2024-01-01T00:00:00+00:00",
             total_ayahs=1,
             total_duration=5.0,
@@ -915,7 +915,7 @@ class TestAdversarialSchemaVersionNoConstraint:
         """Empty string schema_version is accepted - no min_length constraint."""
         meta = AlignmentMetadata(
             schema_version="",
-            munajjam_version="0.1.0",
+            waqf_backend_version="0.1.0",
             generated_at="2024-01-01T00:00:00+00:00",
             total_ayahs=1,
             total_duration=5.0,
@@ -930,7 +930,7 @@ class TestAdversarialSchemaVersionNoConstraint:
         """Arbitrary schema_version string is accepted - no pattern validation."""
         meta = AlignmentMetadata(
             schema_version="99.99",
-            munajjam_version="0.1.0",
+            waqf_backend_version="0.1.0",
             generated_at="2024-01-01T00:00:00+00:00",
             total_ayahs=1,
             total_duration=5.0,
@@ -944,7 +944,7 @@ class TestAdversarialSchemaVersionNoConstraint:
         with pytest.raises(ValidationError):
             AlignmentMetadata(
                 schema_version=None,  # type: ignore[arg-type]
-                munajjam_version="0.1.0",
+                waqf_backend_version="0.1.0",
                 generated_at="2024-01-01T00:00:00+00:00",
                 total_ayahs=1,
                 total_duration=5.0,

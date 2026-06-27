@@ -2,8 +2,8 @@
 Unit tests for zone-level realignment helpers.
 """
 
-from munajjam.core.zone_realigner import _find_problem_runs
-from munajjam.models import AlignmentResult, Ayah
+from waqf_backend.core.zone_realigner import _find_problem_runs
+from waqf_backend.models import AlignmentResult, Ayah
 
 
 def _make_result(

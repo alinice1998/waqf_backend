@@ -1,8 +1,8 @@
 services:
-  munajjam-api:
+  waqf_backend-api:
     build: .
-    image: munajjam-api:latest
-    container_name: munajjam-api
+    image: waqf_backend-api:latest
+    container_name: waqf_backend-api
     ports:
       - "8000:8000"
     volumes:

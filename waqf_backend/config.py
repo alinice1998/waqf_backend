@@ -1,8 +1,8 @@
 """
-Configuration management for Munajjam library.
+Configuration management for Waqf Backend library.
 
 Uses Pydantic Settings for type-safe configuration with environment variable support.
-All settings can be overridden via environment variables with the MUNAJJAM_ prefix.
+All settings can be overridden via environment variables with the WAQF_BACKEND_ prefix.
 """
 
 from pathlib import Path
@@ -12,20 +12,20 @@ from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class MunajjamSettings(BaseSettings):
+class Waqf BackendSettings(BaseSettings):
     """
-    Configuration settings for Munajjam library.
+    Configuration settings for Waqf Backend library.
 
-    All settings can be overridden via environment variables with MUNAJJAM_ prefix.
+    All settings can be overridden via environment variables with WAQF_BACKEND_ prefix.
 
     Example:
-        export MUNAJJAM_MODEL_ID="tarteel-ai/whisper-base-ar-quran"
-        export MUNAJJAM_DEVICE="cuda"
-        export MUNAJJAM_SIMILARITY_THRESHOLD="0.7"
+        export WAQF_BACKEND_MODEL_ID="tarteel-ai/whisper-base-ar-quran"
+        export WAQF_BACKEND_DEVICE="cuda"
+        export WAQF_BACKEND_SIMILARITY_THRESHOLD="0.7"
     """
 
     model_config = SettingsConfigDict(
-        env_prefix="MUNAJJAM_",
+        env_prefix="WAQF_BACKEND_",
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
@@ -169,23 +169,23 @@ class MunajjamSettings(BaseSettings):
 
 
 # Default settings instance
-_default_settings: MunajjamSettings | None = None
+_default_settings: Waqf BackendSettings | None = None
 
 
-def get_settings() -> MunajjamSettings:
+def get_settings() -> Waqf BackendSettings:
     """
     Get the default settings instance (lazily created).
 
     Returns:
-        MunajjamSettings: The default settings
+        Waqf BackendSettings: The default settings
     """
     global _default_settings
     if _default_settings is None:
-        _default_settings = MunajjamSettings()
+        _default_settings = Waqf BackendSettings()
     return _default_settings
 
 
-def configure(**kwargs: Any) -> MunajjamSettings:
+def configure(**kwargs: Any) -> Waqf BackendSettings:
     """
     Create and set new default settings.
 
@@ -193,8 +193,8 @@ def configure(**kwargs: Any) -> MunajjamSettings:
         **kwargs: Settings to override
 
     Returns:
-        MunajjamSettings: The new settings instance
+        Waqf BackendSettings: The new settings instance
     """
     global _default_settings
-    _default_settings = MunajjamSettings(**kwargs)
+    _default_settings = Waqf BackendSettings(**kwargs)
     return _default_settings

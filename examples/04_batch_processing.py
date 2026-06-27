@@ -12,10 +12,10 @@ import json
 import time
 from pathlib import Path
 
-from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs
-from munajjam.formatters import format_alignment_results
-from munajjam.transcription import WhisperTranscriber
+from waqf_backend.core import Aligner
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.formatters import format_alignment_results
+from waqf_backend.transcription import WhisperTranscriber
 
 
 def process_surah(transcriber, audio_path, surah_number):

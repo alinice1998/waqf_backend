@@ -1,5 +1,5 @@
 """
-Pydantic data models for Munajjam library.
+Pydantic data models for Waqf Backend library.
 
 These models represent the core data structures used throughout the library:
 - Ayah: A single verse from the Quran
@@ -8,10 +8,10 @@ These models represent the core data structures used throughout the library:
 - AlignmentResult: Result of aligning a segment to an ayah
 """
 
-from munajjam.models.ayah import Ayah
-from munajjam.models.result import AlignmentResult
-from munajjam.models.segment import Segment, SegmentType, WordTimestamp
-from munajjam.models.surah import Surah
+from waqf_backend.models.ayah import Ayah
+from waqf_backend.models.result import AlignmentResult
+from waqf_backend.models.segment import Segment, SegmentType, WordTimestamp
+from waqf_backend.models.surah import Surah
 
 __all__ = [
     "Ayah",

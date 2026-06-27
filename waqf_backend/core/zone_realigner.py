@@ -35,7 +35,7 @@ TWO STRATEGIES:
 
 from dataclasses import dataclass
 
-from munajjam.models import AlignmentResult, Ayah, Segment
+from waqf_backend.models import AlignmentResult, Ayah, Segment
 
 from .arabic import normalize_arabic
 from .dp_core import align_segments_dp

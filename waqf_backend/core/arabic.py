@@ -9,7 +9,7 @@ import re
 from pathlib import Path
 from typing import Literal
 
-from munajjam.models.segment import Segment, SegmentType
+from waqf_backend.models.segment import Segment, SegmentType
 
 # Regex patterns for special segments
 # Istiadha pattern: handles أعوذ with various alef forms and optional waw prefix

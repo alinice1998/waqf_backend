@@ -1,17 +1,17 @@
 """
-Basic Usage Example for Munajjam
+Basic Usage Example for Waqf Backend
 
-This example demonstrates the simplest way to use Munajjam:
+This example demonstrates the simplest way to use Waqf Backend:
 1. Transcribe an audio file
 2. Load reference ayahs
 3. Align segments to ayahs
 4. Format and export results using the standardized JSON formatter
 """
 
-from munajjam.transcription import WhisperTranscriber
-from munajjam.core import align
-from munajjam.data import load_surah_ayahs
-from munajjam.formatters import format_alignment_results
+from waqf_backend.transcription import WhisperTranscriber
+from waqf_backend.core import align
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.formatters import format_alignment_results
 
 
 def main():

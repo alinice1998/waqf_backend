@@ -96,7 +96,7 @@ venv.bak/
 Thumbs.db
 
 # =============================================================================
-# Munajjam Library - Project Specific
+# Waqf Backend Library - Project Specific
 # =============================================================================
 
 # Audio files (users will have their own recitation files)
@@ -115,15 +115,15 @@ output_*/
 cache/
 
 # Generated JSON files (alignment outputs)
-# Allow example outputs in munajjam/examples
+# Allow example outputs in waqf_backend/examples
 *.json
-!munajjam/examples/*.json
-!munajjam/munajjam/data/*.json
+!waqf_backend/examples/*.json
+!waqf_backend/waqf_backend/data/*.json
 
 # Generated HTML/CSV (analysis outputs)
 *.html
 *.csv
-!munajjam/munajjam/data/*.csv
+!waqf_backend/waqf_backend/data/*.csv
 batch_process.py
 *.mp3
 

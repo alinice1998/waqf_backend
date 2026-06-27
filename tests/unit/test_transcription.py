@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import patch, MagicMock
 
-from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
-from munajjam.transcription.whisper import WhisperTranscriber
-from munajjam.transcription.whisperx import Whisperx
-from munajjam.models import SegmentType
+from waqf_backend.transcription.whisperFactory import WhisperFactory, WhisperBackend
+from waqf_backend.transcription.whisper import WhisperTranscriber
+from waqf_backend.transcription.whisperx import Whisperx
+from waqf_backend.models import SegmentType
 
 
 @pytest.fixture
@@ -14,7 +14,7 @@ def factory():
 
 def test_whisper_factory_faster_whisper(factory):
     with patch(
-        "munajjam.transcription.whisper.WhisperTranscriber.__init__", return_value=None
+        "waqf_backend.transcription.whisper.WhisperTranscriber.__init__", return_value=None
     ) as mock_init:
         transcriber = factory.create_whisper(
             WhisperBackend.FASTERWHISPER, "base", "cpu"
@@ -27,7 +27,7 @@ def test_whisper_factory_faster_whisper(factory):
 
 def test_whisper_factory_openai(factory):
     with patch(
-        "munajjam.transcription.whisper.WhisperTranscriber.__init__", return_value=None
+        "waqf_backend.transcription.whisper.WhisperTranscriber.__init__", return_value=None
     ) as mock_init:
         transcriber = factory.create_whisper(
             WhisperBackend.OPENAI, "openai/whisper-large-v3", "cuda"
@@ -40,7 +40,7 @@ def test_whisper_factory_openai(factory):
 
 def test_whisper_factory_whisperx(factory):
     with patch(
-        "munajjam.transcription.whisperx.Whisperx.__init__", return_value=None
+        "waqf_backend.transcription.whisperx.Whisperx.__init__", return_value=None
     ) as mock_init:
         transcriber = factory.create_whisper(WhisperBackend.WHISPERX, "base", "cuda")
         assert isinstance(transcriber, Whisperx)
@@ -54,7 +54,7 @@ def test_whisper_factory_unsupported(factory):
         factory.create_whisper("invalid_backend", "base", "cpu")
 
 
-@patch("munajjam.transcription.whisperx.whisperx")
+@patch("waqf_backend.transcription.whisperx.whisperx")
 def test_whisperx_transcribe(mock_whisperx_module):
     # Mock whisperx load_model and its returned model
     mock_model = MagicMock()
@@ -78,9 +78,9 @@ def test_whisperx_transcribe(mock_whisperx_module):
     mock_model.transcribe.assert_called_once_with("mock_audio_data", batch_size=8)
 
 
-@patch("munajjam.transcription.whisper.Path.exists", return_value=True)
-@patch("munajjam.transcription.whisper.load_audio_waveform")
-@patch("munajjam.transcription.whisper.WhisperTranscriber._initialize_model")
+@patch("waqf_backend.transcription.whisper.Path.exists", return_value=True)
+@patch("waqf_backend.transcription.whisper.load_audio_waveform")
+@patch("waqf_backend.transcription.whisper.WhisperTranscriber._initialize_model")
 def test_whisper_transcriber_transcribe_transformers(
     mock_init_model, mock_load, mock_exists
 ):
@@ -107,10 +107,10 @@ def test_whisper_transcriber_transcribe_transformers(
     transcriber._model = mock_model
 
     # Mock librosa get_duration
-    with patch("munajjam.transcription.whisper.librosa.get_duration", return_value=1.5):
+    with patch("waqf_backend.transcription.whisper.librosa.get_duration", return_value=1.5):
         # Mock Arabic text detection assuming an ayah mapping function could be invoked
         with patch(
-            "munajjam.transcription.whisper.detect_segment_type",
+            "waqf_backend.transcription.whisper.detect_segment_type",
             return_value=(SegmentType.AYAH, 1),
         ):
             segments = transcriber.transcribe("1.wav", surah_id=1)

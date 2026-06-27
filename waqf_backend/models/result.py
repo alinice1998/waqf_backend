@@ -4,8 +4,8 @@ Alignment result data model.
 
 from pydantic import BaseModel, Field, computed_field
 
-from munajjam.models.ayah import Ayah
-from munajjam.models.segment import WordTimestamp
+from waqf_backend.models.ayah import Ayah
+from waqf_backend.models.segment import WordTimestamp
 
 
 class AlignmentResult(BaseModel):

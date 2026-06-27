@@ -9,7 +9,7 @@ Uses SIMD-accelerated rapidfuzz for fast string matching.
 
 from rapidfuzz.distance import Indel as _rapidfuzz_indel
 
-from munajjam.core.arabic import normalize_arabic
+from waqf_backend.core.arabic import normalize_arabic
 
 
 def similarity(text1: str, text2: str, normalize: bool = True) -> float:

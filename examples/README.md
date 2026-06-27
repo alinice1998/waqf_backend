@@ -1,6 +1,6 @@
-# Munajjam Examples
+# Waqf Backend Examples
 
-This directory contains example scripts demonstrating various use cases of the Munajjam library.
+This directory contains example scripts demonstrating various use cases of the Waqf Backend library.
 
 ## Available Examples
 
@@ -8,7 +8,7 @@ This directory contains example scripts demonstrating various use cases of the M
 
 **Difficulty:** Beginner
 
-The simplest way to use Munajjam. Demonstrates:
+The simplest way to use Waqf Backend. Demonstrates:
 - Transcribing an audio file
 - Loading reference ayahs
 - Aligning segments to ayahs
@@ -66,7 +66,7 @@ python 03_advanced_configuration.py
 ```
 
 **Learn:**
-- How to configure Munajjam for specific needs
+- How to configure Waqf Backend for specific needs
 - How to use silence detection to improve alignment
 - How to inspect and debug alignment results
 - How to export results for further processing
@@ -99,10 +99,10 @@ python 04_batch_processing.py
 
 ## Before Running
 
-### 1. Install Munajjam
+### 1. Install Waqf Backend
 
 ```bash
-pip install munajjam
+pip install waqf_backend
 ```
 
 Or for development:
@@ -191,7 +191,7 @@ for result in results:
 
 ### Model Download Issues
 
-On first run, Munajjam downloads the Whisper model (~150MB). If you get download errors:
+On first run, Waqf Backend downloads the Whisper model (~150MB). If you get download errors:
 
 ```bash
 # Set Hugging Face cache directory (optional)
@@ -203,10 +203,10 @@ export TRANSFORMERS_OFFLINE=1
 
 ### GPU/CUDA Issues
 
-By default, Munajjam auto-detects your device. To force CPU:
+By default, Waqf Backend auto-detects your device. To force CPU:
 
 ```python
-from munajjam.config import configure
+from waqf_backend.config import configure
 configure(device="cpu")
 ```
 
@@ -241,5 +241,5 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for more details.
 ## Need Help?
 
 - **Documentation**: See the main [README.md](../README.md)
-- **Issues**: [GitHub Issues](https://github.com/yourusername/munajjam/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/munajjam/discussions)
+- **Issues**: [GitHub Issues](https://github.com/yourusername/waqf_backend/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/yourusername/waqf_backend/discussions)

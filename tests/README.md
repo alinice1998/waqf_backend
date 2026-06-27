@@ -1,6 +1,6 @@
-# Munajjam Test Suite
+# Waqf Backend Test Suite
 
-This directory contains comprehensive unit and integration tests for the Munajjam library.
+This directory contains comprehensive unit and integration tests for the Waqf Backend library.
 
 ## Test Structure
 
@@ -43,7 +43,7 @@ pytest -v
 
 ### Run with coverage report:
 ```bash
-pytest --cov=munajjam --cov-report=html
+pytest --cov=waqf_backend --cov-report=html
 ```
 
 ### Run specific test:
@@ -112,7 +112,7 @@ Shared fixtures are defined in `conftest.py`:
 Example:
 ```python
 import pytest
-from munajjam.core import Aligner
+from waqf_backend.core import Aligner
 
 class TestMyFeature:
     def test_basic_usage(self, sample_segments, sample_ayahs):
@@ -126,7 +126,7 @@ class TestMyFeature:
 
 Run tests with coverage to see which code is tested:
 ```bash
-pytest --cov=munajjam --cov-report=term-missing
+pytest --cov=waqf_backend --cov-report=term-missing
 ```
 
 View HTML report:

@@ -1,11 +1,11 @@
 """
-Command-line interface for Munajjam.
+Command-line interface for Waqf Backend.
 
 Usage:
-    munajjam align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
-    munajjam batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>]
-    munajjam --version
-    munajjam --help
+    waqf_backend align <audio_file> [--surah <number>] [--strategy <name>] [--output <file>] [--format <fmt>]
+    waqf_backend batch <directory> [--pattern <glob>] [--output-dir <dir>] [--format <fmt>]
+    waqf_backend --version
+    waqf_backend --help
 """
 
 import argparse
@@ -13,9 +13,9 @@ import json
 import sys
 from pathlib import Path
 
-from munajjam import __version__
-from munajjam.core.arabic import infer_surah_number
-from munajjam.transcription.whisperx import Whisperx
+from waqf_backend import __version__
+from waqf_backend.core.arabic import infer_surah_number
+from waqf_backend.transcription.whisperx import Whisperx
 
 # Valid surah range
 MIN_SURAH = 1
@@ -23,17 +23,17 @@ MAX_SURAH = 114
 
 
 def create_parser() -> argparse.ArgumentParser:
-    """Create the argument parser for the munajjam CLI."""
+    """Create the argument parser for the waqf_backend CLI."""
     parser = argparse.ArgumentParser(
-        prog="munajjam",
-        description="Munajjam — Synchronize Quran ayat with audio recitations.",
-        epilog="For more information, visit: https://github.com/Itqan-community/Munajjam",
+        prog="waqf_backend",
+        description="Waqf Backend — Synchronize Quran ayat with audio recitations.",
+        epilog="For more information, visit: https://github.com/Itqan-community/Waqf Backend",
     )
 
     parser.add_argument(
         "--version",
         action="version",
-        version=f"munajjam {__version__}",
+        version=f"waqf_backend {__version__}",
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
@@ -207,8 +207,8 @@ def _write_output(content: str, output_path: str | None) -> None:
 
 def cmd_align(args: argparse.Namespace) -> int:
     """Execute the align command."""
-    from munajjam.core import align
-    from munajjam.data import load_surah_ayahs
+    from waqf_backend.core import align
+    from waqf_backend.data import load_surah_ayahs
 
     audio_path = args.audio_file
     if not Path(audio_path).exists():
@@ -235,7 +235,7 @@ def cmd_align(args: argparse.Namespace) -> int:
     print(f"Strategy: {args.strategy}", file=sys.stderr)
     print(f"Riwaya: {args.riwaya}", file=sys.stderr)
 
-    from munajjam.config import configure, get_settings
+    from waqf_backend.config import configure, get_settings
 
     settings = configure(riwaya=args.riwaya)
 
@@ -259,9 +259,9 @@ def cmd_align(args: argparse.Namespace) -> int:
 
 def cmd_batch(args: argparse.Namespace) -> int:
     """Execute the batch command."""
-    from munajjam.config import configure, get_settings
-    from munajjam.core import align
-    from munajjam.data import load_surah_ayahs
+    from waqf_backend.config import configure, get_settings
+    from waqf_backend.core import align
+    from waqf_backend.data import load_surah_ayahs
 
     input_dir = Path(args.directory)
     if not input_dir.is_dir():
@@ -319,7 +319,7 @@ def cmd_batch(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Main entry point for the munajjam CLI."""
+    """Main entry point for the waqf_backend CLI."""
     parser = create_parser()
     args = parser.parse_args(argv)
 

@@ -6,7 +6,7 @@ audio segments with reference Quran ayahs. It supports multiple alignment
 strategies and handles all post-processing (zone realignment, overlap fixing).
 
 Usage:
-    from munajjam.core import Aligner
+    from waqf_backend.core import Aligner
 
     aligner = Aligner(audio_path="001.mp3")
     results = aligner.align(segments, ayahs, silences_ms=silences)

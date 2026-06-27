@@ -16,8 +16,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from munajjam.core.aligner import AlignmentStrategy
-from munajjam.models import AlignmentResult, Ayah, Segment, SegmentType
+from waqf_backend.core.aligner import AlignmentStrategy
+from waqf_backend.models import AlignmentResult, Ayah, Segment, SegmentType
 
 pytestmark = pytest.mark.smoke
 
@@ -25,7 +25,7 @@ pytestmark = pytest.mark.smoke
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 EXAMPLES_ROOT = REPO_ROOT / "examples"
-MUNAJJAM_EXAMPLES = REPO_ROOT / "munajjam" / "examples"
+WAQF_BACKEND_EXAMPLES = REPO_ROOT / "waqf_backend" / "examples"
 
 
 # --------------- Shared fixtures ---------------
@@ -136,7 +136,7 @@ def _load_module_from_file(file_path: Path, module_name: str) -> types.ModuleTyp
 
 
 class TestExampleImportsStatic:
-    """Statically verify that all munajjam imports in example files resolve."""
+    """Statically verify that all waqf_backend imports in example files resolve."""
 
     @pytest.mark.parametrize(
         "example_path",
@@ -145,19 +145,19 @@ class TestExampleImportsStatic:
             EXAMPLES_ROOT / "02_comparing_strategies.py",
             EXAMPLES_ROOT / "03_advanced_configuration.py",
             EXAMPLES_ROOT / "04_batch_processing.py",
-            MUNAJJAM_EXAMPLES / "basic_usage.py",
-            MUNAJJAM_EXAMPLES / "example_alignment.py",
+            WAQF_BACKEND_EXAMPLES / "basic_usage.py",
+            WAQF_BACKEND_EXAMPLES / "example_alignment.py",
         ],
         ids=lambda p: p.name,
     )
-    def test_all_munajjam_imports_resolve(self, example_path: Path) -> None:
-        """Parse example source and verify each munajjam import resolves."""
+    def test_all_waqf_backend_imports_resolve(self, example_path: Path) -> None:
+        """Parse example source and verify each waqf_backend import resolves."""
         source = example_path.read_text()
         tree = ast.parse(source)
 
         for node in ast.walk(tree):
             if isinstance(node, ast.ImportFrom):
-                if node.module and node.module.startswith("munajjam"):
+                if node.module and node.module.startswith("waqf_backend"):
                     mod = importlib.import_module(node.module)
                     for alias in node.names:
                         assert hasattr(mod, alias.name), (
@@ -220,11 +220,11 @@ class TestExampleStrategies:
 
 
 class TestBasicUsageContract:
-    """Verify munajjam/examples/basic_usage.py uses correct API signatures."""
+    """Verify waqf_backend/examples/basic_usage.py uses correct API signatures."""
 
     def test_align_called_with_audio_path(self) -> None:
         """basic_usage.py must pass audio_path as first arg to align()."""
-        source = (MUNAJJAM_EXAMPLES / "basic_usage.py").read_text()
+        source = (WAQF_BACKEND_EXAMPLES / "basic_usage.py").read_text()
         # align(segments, ayahs) is wrong — must be align(audio_path, segments, ayahs)
         assert "align(segments, ayahs)" not in source, (
             "basic_usage.py calls align(segments, ayahs) without required "
@@ -254,15 +254,15 @@ class TestExample01BasicUsage:
         # to the mocked objects at exec_module() time.
         with (
             patch(
-                "munajjam.transcription.WhisperTranscriber",
+                "waqf_backend.transcription.WhisperTranscriber",
                 return_value=mock_transcriber,
             ),
             patch(
-                "munajjam.data.load_surah_ayahs",
+                "waqf_backend.data.load_surah_ayahs",
                 return_value=mock_ayahs,
             ),
             patch(
-                "munajjam.core.align",
+                "waqf_backend.core.align",
                 return_value=mock_alignment_results,
             ),
         ):
@@ -289,7 +289,7 @@ class TestExample02ComparingStrategies:
         mock_aligner.align.return_value = mock_alignment_results
 
         with patch(
-            "munajjam.core.Aligner",
+            "waqf_backend.core.Aligner",
             return_value=mock_aligner,
         ):
             mod = _load_module_from_file(
@@ -314,7 +314,7 @@ class TestExample03AdvancedConfiguration:
         """03 must only pass valid kwargs to Aligner.__init__."""
         import inspect
 
-        from munajjam.core import Aligner
+        from waqf_backend.core import Aligner
 
         valid_params = set(inspect.signature(Aligner.__init__).parameters.keys())
         valid_params.discard("self")
@@ -339,7 +339,7 @@ class TestExample03AdvancedConfiguration:
         """03 must only pass valid kwargs to Aligner.align()."""
         import inspect
 
-        from munajjam.core import Aligner
+        from waqf_backend.core import Aligner
 
         valid_params = set(inspect.signature(Aligner.align).parameters.keys())
         valid_params.discard("self")
@@ -385,22 +385,22 @@ class TestExample03AdvancedConfiguration:
 
         with (
             patch(
-                "munajjam.transcription.WhisperTranscriber",
+                "waqf_backend.transcription.WhisperTranscriber",
                 return_value=mock_transcriber,
             ),
             patch(
-                "munajjam.transcription.detect_silences",
+                "waqf_backend.transcription.detect_silences",
                 return_value=mock_silences,
             ),
             patch(
-                "munajjam.data.load_surah_ayahs",
+                "waqf_backend.data.load_surah_ayahs",
                 return_value=mock_ayahs,
             ),
             patch(
-                "munajjam.core.Aligner",
+                "waqf_backend.core.Aligner",
                 return_value=mock_aligner,
             ),
-            patch("munajjam.config.configure"),
+            patch("waqf_backend.config.configure"),
             patch("builtins.open", MagicMock()),
         ):
             mod = _load_module_from_file(
@@ -431,11 +431,11 @@ class TestExample04BatchProcessing:
 
         with (
             patch(
-                "munajjam.core.Aligner",
+                "waqf_backend.core.Aligner",
                 return_value=mock_aligner,
             ),
             patch(
-                "munajjam.data.load_surah_ayahs",
+                "waqf_backend.data.load_surah_ayahs",
                 return_value=mock_ayahs,
             ),
         ):
@@ -455,11 +455,11 @@ class TestExample04BatchProcessing:
             assert "high_confidence_count" in stats
 
 
-# --------------- Smoke Tests: munajjam/examples/ ---------------
+# --------------- Smoke Tests: waqf_backend/examples/ ---------------
 
 
-class TestMunajjamExampleBasicUsage:
-    """Smoke tests for munajjam/examples/basic_usage.py."""
+class TestWaqf BackendExampleBasicUsage:
+    """Smoke tests for waqf_backend/examples/basic_usage.py."""
 
     def test_process_surah_runs(
         self,
@@ -474,19 +474,19 @@ class TestMunajjamExampleBasicUsage:
         mock_transcriber.__exit__ = MagicMock(return_value=False)
         mock_transcriber.transcribe.return_value = mock_segments
 
-        monkeypatch.syspath_prepend(str(MUNAJJAM_EXAMPLES))
+        monkeypatch.syspath_prepend(str(WAQF_BACKEND_EXAMPLES))
 
         with (
             patch(
-                "munajjam.transcription.WhisperTranscriber",
+                "waqf_backend.transcription.WhisperTranscriber",
                 return_value=mock_transcriber,
             ),
             patch(
-                "munajjam.data.load_surah_ayahs",
+                "waqf_backend.data.load_surah_ayahs",
                 return_value=mock_ayahs,
             ),
             patch(
-                "munajjam.core.align",
+                "waqf_backend.core.align",
                 return_value=mock_alignment_results,
             ),
         ):
@@ -512,15 +512,15 @@ class TestMunajjamExampleBasicUsage:
                     del sys.modules["basic_usage"]
 
 
-class TestMunajjamExampleAlignment:
-    """Smoke tests for munajjam/examples/example_alignment.py."""
+class TestWaqf BackendExampleAlignment:
+    """Smoke tests for waqf_backend/examples/example_alignment.py."""
 
     def test_core_functions_runs(
         self,
         monkeypatch: pytest.MonkeyPatch,
     ) -> None:
         """run_core_functions() runs without error (pure computation)."""
-        monkeypatch.syspath_prepend(str(MUNAJJAM_EXAMPLES))
+        monkeypatch.syspath_prepend(str(WAQF_BACKEND_EXAMPLES))
 
         if "example_alignment" in sys.modules:
             del sys.modules["example_alignment"]

@@ -10,10 +10,10 @@ This example demonstrates the differences between the four alignment strategies:
 
 import time
 
-from munajjam.core import Aligner
-from munajjam.data import load_surah_ayahs
-from munajjam.formatters import format_alignment_results
-from munajjam.transcription import WhisperTranscriber
+from waqf_backend.core import Aligner
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.formatters import format_alignment_results
+from waqf_backend.transcription import WhisperTranscriber
 
 
 def align_with_strategy(segments, ayahs, strategy_name, audio_path):
@@ -60,7 +60,7 @@ def main():
     audio_path = "Quran/badr_alturki_audio/114.wav"
     surah_number = 114
 
-    print("Munajjam Alignment Strategy Comparison")
+    print("Waqf Backend Alignment Strategy Comparison")
     print("=" * 80)
 
     # Step 1: Transcribe once (shared across all strategies)

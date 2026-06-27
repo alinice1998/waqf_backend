@@ -1,5 +1,5 @@
 """
-Integration tests for Munajjam library.
+Integration tests for Waqf Backend library.
 """
 
 from pathlib import Path

@@ -1,10 +1,10 @@
 """
-مُنَجِّم (Munajjam) — A Python library to synchronize Quran Ayat with audio recitations.
+مُنَجِّم (Waqf Backend) — A Python library to synchronize Quran Ayat with audio recitations.
 
 Usage:
-    from munajjam.transcription import Whisperx
-    from munajjam.core import align_segments
-    from munajjam.data import load_surah_ayahs
+    from waqf_backend.transcription import Whisperx
+    from waqf_backend.core import align_segments
+    from waqf_backend.data import load_surah_ayahs
 
     # Transcribe
     transcriber = Whisperx(model_name="model_id")
@@ -19,24 +19,24 @@ Usage:
         print(f"Ayah {result.ayah.ayah_number}: {result.start_time:.2f}s - {result.end_time:.2f}s")
 """
 
-from munajjam._version import __version__
-from munajjam.config import MunajjamSettings, configure, get_settings
-from munajjam.exceptions import (
+from waqf_backend._version import __version__
+from waqf_backend.config import Waqf BackendSettings, configure, get_settings
+from waqf_backend.exceptions import (
     AlignmentError,
     AudioFileError,
     ConfigurationError,
     ModelNotLoadedError,
-    MunajjamError,
+    Waqf BackendError,
     QuranDataError,
     TranscriptionError,
 )
-from munajjam.formatters import (
+from waqf_backend.formatters import (
     AlignmentMetadata,
     AlignmentOutput,
     FormattedAyahResult,
     format_alignment_results,
 )
-from munajjam.models import (
+from waqf_backend.models import (
     AlignmentResult,
     Ayah,
     Segment,
@@ -54,7 +54,7 @@ __all__ = [
     "Surah",
     "AlignmentResult",
     # Config
-    "MunajjamSettings",
+    "Waqf BackendSettings",
     "get_settings",
     "configure",
     # Formatters
@@ -63,7 +63,7 @@ __all__ = [
     "AlignmentMetadata",
     "format_alignment_results",
     # Exceptions
-    "MunajjamError",
+    "Waqf BackendError",
     "TranscriptionError",
     "AlignmentError",
     "ConfigurationError",

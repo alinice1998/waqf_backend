@@ -11,18 +11,18 @@ import uvicorn
 import soundfile as sf
 import torch
 
-# Munajjam imports
-from munajjam.transcription.whisperx import Whisperx
-from munajjam.core.aligner import align
-from munajjam.models.ayah import Ayah
-from munajjam.formatters import format_alignment_results
+# Waqf Backend imports
+from waqf_backend.transcription.whisperx import Whisperx
+from waqf_backend.core.aligner import align
+from waqf_backend.models.ayah import Ayah
+from waqf_backend.formatters import format_alignment_results
 
-from munajjam.data import load_surah_ayahs
+from waqf_backend.data import load_surah_ayahs
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = FastAPI(title="Munajjam Alignment API")
+app = FastAPI(title="Waqf Backend Alignment API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,7 +38,7 @@ jobs: dict = {}
 _executor = ThreadPoolExecutor(max_workers=1)
 
 def _run_job(job_id: str, file_path: str, surah_number: int):
-    """Runs the Munajjam alignment pipeline in a background thread."""
+    """Runs the Waqf Backend alignment pipeline in a background thread."""
     try:
         jobs[job_id]["status"] = "processing"
         
@@ -55,7 +55,7 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
             
         logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
 
-        # 3. Align using Munajjam's core
+        # 3. Align using Waqf Backend's core
         results = align(
             audio_path=file_path,
             segments=segments,

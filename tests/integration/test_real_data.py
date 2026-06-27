@@ -1,13 +1,13 @@
 """
-Integration tests for Munajjam library using real Quran data.
+Integration tests for Waqf Backend library using real Quran data.
 """
 
 import pytest
 import torch
 from pathlib import Path
-from munajjam.data import load_surah_ayahs
-from munajjam.core import Aligner
-from munajjam.transcription.whisperFactory import WhisperFactory, WhisperBackend
+from waqf_backend.data import load_surah_ayahs
+from waqf_backend.core import Aligner
+from waqf_backend.transcription.whisperFactory import WhisperFactory, WhisperBackend
 
 
 @pytest.fixture

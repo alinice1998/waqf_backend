@@ -1,5 +1,5 @@
 """
-Core modules for Munajjam library.
+Core modules for Waqf Backend library.
 
 This package contains the core business logic for:
 - Alignment of transcribed segments to Quran ayahs
@@ -7,7 +7,7 @@ This package contains the core business logic for:
 - Similarity matching algorithms
 
 Primary API:
-    from munajjam.core import Aligner, AlignmentStrategy, align
+    from waqf_backend.core import Aligner, AlignmentStrategy, align
 
     # Simple usage
     results = align("001.mp3", segments, ayahs)
@@ -18,15 +18,15 @@ Primary API:
 """
 
 # Primary API - what most users need
-from munajjam.core.aligner import Aligner, AlignmentStrategy, align
+from waqf_backend.core.aligner import Aligner, AlignmentStrategy, align
 
 # Text utilities - commonly used
-from munajjam.core.arabic import detect_segment_type, normalize_arabic
+from waqf_backend.core.arabic import detect_segment_type, normalize_arabic
 
 # Stats classes - for inspecting results
-from munajjam.core.hybrid import HybridStats
-from munajjam.core.matcher import similarity
-from munajjam.core.zone_realigner import ProblemZone, ZoneStats
+from waqf_backend.core.hybrid import HybridStats
+from waqf_backend.core.matcher import similarity
+from waqf_backend.core.zone_realigner import ProblemZone, ZoneStats
 
 __all__ = [
     # Primary API

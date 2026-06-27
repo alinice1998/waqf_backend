@@ -1,5 +1,5 @@
 """
-Munajjam Test Suite
+Waqf Backend Test Suite
 """
 
 from pathlib import Path

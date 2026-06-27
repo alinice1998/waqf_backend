@@ -3,8 +3,8 @@ Unit tests for data models.
 """
 
 import pytest
-from munajjam.models import Segment, SegmentType, Ayah, AlignmentResult
-from munajjam.models.segment import WordTimestamp
+from waqf_backend.models import Segment, SegmentType, Ayah, AlignmentResult
+from waqf_backend.models.segment import WordTimestamp
 
 
 class TestSegment:

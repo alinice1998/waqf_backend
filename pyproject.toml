@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "munajjam"
+name = "waqf_backend"
 version = "0.1.0"
 description = "A Python library to synchronize Quran Ayat with audio recitations"
 readme = "README.md"
@@ -57,24 +57,24 @@ dev = [
     "mypy>=1.0.0",
 ]
 all = [
-    "munajjam[dev]",
+    "waqf_backend[dev]",
 ]
 
 [project.scripts]
-munajjam = "munajjam.cli:cli"
+waqf_backend = "waqf_backend.cli:cli"
 
 [project.urls]
-Homepage = "https://github.com/abdullahmosaibah/munajjam"
-Documentation = "https://github.com/abdullahmosaibah/munajjam#readme"
-Repository = "https://github.com/abdullahmosaibah/munajjam"
-Issues = "https://github.com/abdullahmosaibah/munajjam/issues"
+Homepage = "https://github.com/abdullahmosaibah/waqf_backend"
+Documentation = "https://github.com/abdullahmosaibah/waqf_backend#readme"
+Repository = "https://github.com/abdullahmosaibah/waqf_backend"
+Issues = "https://github.com/abdullahmosaibah/waqf_backend/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["munajjam"]
+packages = ["waqf_backend"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-    "munajjam/",
+    "waqf_backend/",
     "README.md",
     "LICENSE",
 ]
@@ -99,7 +99,7 @@ ignore = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["munajjam"]
+known-first-party = ["waqf_backend"]
 
 [tool.mypy]
 python_version = "3.10"

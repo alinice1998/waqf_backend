@@ -1,5 +1,5 @@
 """
-Structured logging utilities for Munajjam library.
+Structured logging utilities for Waqf Backend library.
 
 Provides a configured logger and helper functions for consistent logging.
 """
@@ -8,17 +8,17 @@ import logging
 import sys
 from typing import TextIO
 
-# Default format for Munajjam logs
+# Default format for Waqf Backend logs
 DEFAULT_FORMAT = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 DEFAULT_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
-def get_logger(name: str = "munajjam") -> logging.Logger:
+def get_logger(name: str = "waqf_backend") -> logging.Logger:
     """
     Get a logger instance for the given name.
 
     Args:
-        name: Logger name (default: "munajjam")
+        name: Logger name (default: "waqf_backend")
 
     Returns:
         Configured logger instance
@@ -33,7 +33,7 @@ def configure_logging(
     stream: TextIO | None = None,
 ) -> logging.Logger:
     """
-    Configure logging for the Munajjam library.
+    Configure logging for the Waqf Backend library.
 
     Args:
         level: Logging level (default: INFO)
@@ -42,9 +42,9 @@ def configure_logging(
         stream: Output stream (default: sys.stderr)
 
     Returns:
-        Configured root logger for munajjam
+        Configured root logger for waqf_backend
     """
-    logger = logging.getLogger("munajjam")
+    logger = logging.getLogger("waqf_backend")
     logger.setLevel(level)
 
     # Remove existing handlers
@@ -67,13 +67,13 @@ def configure_logging(
 
 
 def enable_debug_logging() -> None:
-    """Enable debug-level logging for the Munajjam library."""
+    """Enable debug-level logging for the Waqf Backend library."""
     configure_logging(level=logging.DEBUG)
 
 
 def disable_logging() -> None:
-    """Disable all Munajjam logging."""
-    logger = logging.getLogger("munajjam")
+    """Disable all Waqf Backend logging."""
+    logger = logging.getLogger("waqf_backend")
     logger.handlers.clear()
     logger.addHandler(logging.NullHandler())
 

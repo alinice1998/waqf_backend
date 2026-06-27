@@ -3,7 +3,7 @@ Unit tests for data loading functions.
 """
 
 import pytest
-from munajjam.data import load_surah_ayahs, get_surah_name, get_ayah_count
+from waqf_backend.data import load_surah_ayahs, get_surah_name, get_ayah_count
 
 
 class TestLoadSurahAyahs:

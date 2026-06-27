@@ -1,14 +1,14 @@
 """
-Custom exceptions for Munajjam library.
+Custom exceptions for Waqf Backend library.
 
-All exceptions inherit from MunajjamError for easy catching of library-specific errors.
+All exceptions inherit from Waqf BackendError for easy catching of library-specific errors.
 """
 
 from typing import Any
 
 
-class MunajjamError(Exception):
-    """Base exception for all Munajjam errors."""
+class Waqf BackendError(Exception):
+    """Base exception for all Waqf Backend errors."""
 
     def __init__(self, message: str, context: dict[str, Any] | None = None) -> None:
         super().__init__(message)
@@ -22,7 +22,7 @@ class MunajjamError(Exception):
         return self.message
 
 
-class TranscriptionError(MunajjamError):
+class TranscriptionError(Waqf BackendError):
     """Raised when audio transcription fails."""
 
     def __init__(
@@ -38,7 +38,7 @@ class TranscriptionError(MunajjamError):
         self.audio_path = audio_path
 
 
-class AlignmentError(MunajjamError):
+class AlignmentError(Waqf BackendError):
     """Raised when ayah alignment fails."""
 
     def __init__(
@@ -58,7 +58,7 @@ class AlignmentError(MunajjamError):
         self.ayah_number = ayah_number
 
 
-class ConfigurationError(MunajjamError):
+class ConfigurationError(Waqf BackendError):
     """Raised when configuration is invalid."""
 
     def __init__(
@@ -91,7 +91,7 @@ class AudioFileError(TranscriptionError):
         super().__init__(message, audio_path=audio_path)
 
 
-class QuranDataError(MunajjamError):
+class QuranDataError(Waqf BackendError):
     """Raised when Quran reference data cannot be loaded."""
 
     def __init__(self, message: str = "Failed to load Quran reference data.") -> None:
