@@ -1,4 +1,4 @@
-﻿import os
+import os
 import uuid
 import gc
 import shutil
@@ -83,7 +83,7 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
                 words = seg_words_by_id.get(r.ayah.ayah_number)
                 
             if words:
-                ayah_data["words"] = [{"word": getattr(w, "word", w), "start": w.start, "end": w.end} for w in words]
+                ayah_data["words"] = [{"word": getattr(w, "word", w), "start": w.start, "end": w.end, "original_start": getattr(w, "original_start", None), "original_end": getattr(w, "original_end", None)} for w in words]
             response_data.append(ayah_data)
 
         jobs[job_id] = {
