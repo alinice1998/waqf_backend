@@ -1,13 +1,141 @@
 """
 Silence detection utilities for audio processing.
 
-Provides both pydub (accurate) and librosa (fast) implementations.
-Use the fast implementation for long files (>5 minutes).
+Provides adaptive (dynamic threshold) and fixed-threshold implementations.
+The adaptive method is strongly recommended for Quranic recitations which
+typically contain reverb and ambient noise that defeat fixed thresholds.
 """
 
 from pathlib import Path
 from typing import Any
 
+import logging
+
+logger = logging.getLogger("munajjam.silence")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  PRIMARY API — Adaptive (Dynamic Threshold) Silence Detection
+# ═══════════════════════════════════════════════════════════════════════════
+
+def detect_silences_adaptive(
+    audio_path: str | Path,
+    min_silence_len: int = 200,
+    percentile: float = 15.0,
+    smooth_kernel: int = 7,
+    merge_gap_ms: int = 80,
+) -> list[tuple[int, int]]:
+    """
+    Detect silent portions using a dynamic threshold based on signal statistics.
+
+    Instead of a fixed dB threshold (which fails on reverb-heavy recordings),
+    this computes the energy percentile of the signal to automatically adapt
+    to the noise floor of each specific recording.
+
+    Args:
+        audio_path: Path to the audio file
+        min_silence_len: Minimum silence length in milliseconds (default 200ms)
+        percentile: Energy percentile below which frames are considered silent.
+                    Lower = stricter (fewer silences detected). Default 15.0.
+        smooth_kernel: Median-filter kernel size for smoothing the energy
+                       contour before thresholding. Odd number. Default 7.
+        merge_gap_ms: Merge silence regions separated by less than this (ms).
+                      Prevents tiny speech blips from splitting one pause. Default 80.
+
+    Returns:
+        List of (start_ms, end_ms) tuples for silent portions
+    """
+    import librosa
+    import numpy as np
+
+    # Load audio at native sample rate for accuracy
+    y, sr = librosa.load(str(audio_path), sr=None)
+
+    # Calculate frame-based RMS energy with ~10ms frames
+    frame_length = int(sr * 0.01)  # 10ms frames
+    hop_length = frame_length // 2  # 50% overlap for good resolution
+
+    rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
+
+    # ── Adaptive Threshold ─────────────────────────────────────────────
+    # Use a percentile of the RMS energy as the silence threshold.
+    # This automatically adapts to the recording's noise floor.
+    # For clean recordings, the threshold will be very low.
+    # For reverb-heavy recordings, it will be proportionally higher.
+    threshold = np.percentile(rms, percentile)
+
+    # Ensure threshold is at least a tiny value to avoid detecting
+    # everything as silence in perfectly silent recordings
+    if threshold < 1e-6:
+        threshold = 1e-6
+
+    logger.debug(
+        f"Adaptive silence: percentile={percentile}, "
+        f"threshold={threshold:.6f}, "
+        f"rms_min={rms.min():.6f}, rms_max={rms.max():.6f}, "
+        f"rms_median={np.median(rms):.6f}"
+    )
+
+    # ── Smoothing ──────────────────────────────────────────────────────
+    # Apply median filter to smooth out brief spikes/dips in energy.
+    # This prevents false silence detections caused by momentary drops
+    # (e.g., between syllables within a single word).
+    if smooth_kernel > 1:
+        from scipy.ndimage import median_filter
+        rms_smoothed = median_filter(rms, size=smooth_kernel)
+    else:
+        rms_smoothed = rms
+
+    # ── Detect silent frames ───────────────────────────────────────────
+    is_silent = rms_smoothed < threshold
+
+    # Convert frame indices to milliseconds
+    frame_times_ms = (
+        librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) * 1000
+    )
+
+    # ── Extract contiguous silent regions ──────────────────────────────
+    silences: list[tuple[int, int]] = []
+    in_silence = False
+    silence_start = 0.0
+
+    for i, silent in enumerate(is_silent):
+        if silent and not in_silence:
+            in_silence = True
+            silence_start = frame_times_ms[i]
+        elif not silent and in_silence:
+            in_silence = False
+            silence_end = frame_times_ms[i]
+            duration = silence_end - silence_start
+            if duration >= min_silence_len:
+                silences.append((int(silence_start), int(silence_end)))
+
+    # Handle audio ending in silence
+    if in_silence:
+        silence_end = frame_times_ms[-1]
+        duration = silence_end - silence_start
+        if duration >= min_silence_len:
+            silences.append((int(silence_start), int(silence_end)))
+
+    # ── Merge nearby silences ──────────────────────────────────────────
+    # Short speech blips between two silences are often noise/reverb tail.
+    if len(silences) > 1 and merge_gap_ms > 0:
+        merged = [silences[0]]
+        for start, end in silences[1:]:
+            prev_start, prev_end = merged[-1]
+            if start - prev_end < merge_gap_ms:
+                merged[-1] = (prev_start, end)
+            else:
+                merged.append((start, end))
+        silences = merged
+
+    logger.info(f"Adaptive silence detection found {len(silences)} silence regions")
+    return silences
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  LEGACY API — Fixed Threshold (kept for backward compatibility)
+# ═══════════════════════════════════════════════════════════════════════════
 
 def detect_silences(
     audio_path: str | Path,
@@ -16,7 +144,10 @@ def detect_silences(
     use_fast: bool = True,
 ) -> list[tuple[int, int]]:
     """
-    Detect silent portions in an audio file.
+    Detect silent portions in an audio file (legacy fixed-threshold API).
+
+    NOTE: For Quranic recitations, prefer detect_silences_adaptive() which
+    automatically adapts to the recording's noise characteristics.
 
     Args:
         audio_path: Path to the audio file
@@ -30,7 +161,7 @@ def detect_silences(
     if use_fast:
         try:
             return _detect_silences_fast(audio_path, min_silence_len, silence_thresh)
-        except:  # noqa: E722 - Bare except to catch numpy/scipy C-extension errors
+        except Exception:
             pass  # Fallback to pydub
 
     return _detect_silences_pydub(audio_path, min_silence_len, silence_thresh)
@@ -64,60 +195,44 @@ def _detect_silences_fast(
 
     ~10-50x faster than pydub for long files.
     """
-    # Import inside try block to catch numpy/scipy version conflicts
-    try:
-        import librosa
-        import numpy as np
-    except (ImportError, AttributeError) as e:
-        raise ImportError(f"librosa not available: {e}") from e
+    import librosa
+    import numpy as np
 
-    # Load audio at native sample rate for accuracy
     y, sr = librosa.load(str(audio_path), sr=None)
 
     # Convert dB threshold to amplitude ratio
-    # pydub uses dBFS relative to max, we'll use RMS-based detection
-    # -30 dB ≈ 0.0316 amplitude ratio
     amplitude_thresh = 10 ** (silence_thresh / 20)
 
-    # Calculate frame-based RMS energy
-    # Use ~10ms frames for good resolution
     frame_length = int(sr * 0.01)  # 10ms frames
-    hop_length = frame_length // 2  # 50% overlap
+    hop_length = frame_length // 2
 
-    # Calculate RMS energy per frame
     rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
 
     # Normalize RMS to 0-1 range
     rms_max = np.max(rms) if np.max(rms) > 0 else 1.0
     rms_normalized = rms / rms_max
 
-    # Find frames below threshold (silent)
     is_silent = rms_normalized < amplitude_thresh
 
-    # Convert to time-based regions
     frame_times_ms = (
         librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) * 1000
     )
 
-    # Find contiguous silent regions
-    silences = []
+    silences: list[tuple[int, int]] = []
     in_silence = False
-    silence_start = 0
+    silence_start = 0.0
 
     for i, silent in enumerate(is_silent):
         if silent and not in_silence:
-            # Start of silence
             in_silence = True
             silence_start = frame_times_ms[i]
         elif not silent and in_silence:
-            # End of silence
             in_silence = False
             silence_end = frame_times_ms[i]
             duration = silence_end - silence_start
             if duration >= min_silence_len:
                 silences.append((int(silence_start), int(silence_end)))
 
-    # Handle case where audio ends in silence
     if in_silence:
         silence_end = frame_times_ms[-1]
         duration = silence_end - silence_start
@@ -126,6 +241,10 @@ def _detect_silences_fast(
 
     return silences
 
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  NON-SILENT CHUNK DETECTION
+# ═══════════════════════════════════════════════════════════════════════════
 
 def detect_non_silent_chunks(
     audio_path: str | Path,
@@ -148,7 +267,7 @@ def detect_non_silent_chunks(
     if use_fast:
         try:
             return _detect_non_silent_fast(audio_path, min_silence_len, silence_thresh)
-        except:  # noqa: E722 - Bare except to catch numpy/scipy C-extension errors
+        except Exception:
             pass  # Fallback to pydub
 
     return _detect_non_silent_pydub(audio_path, min_silence_len, silence_thresh)
@@ -182,39 +301,30 @@ def _detect_non_silent_fast(
 
     Returns the inverse of silence detection.
     """
-    # Import inside try block to catch numpy/scipy version conflicts
-    try:
-        import librosa
-        import numpy as np
-    except (ImportError, AttributeError) as e:
-        raise ImportError(f"librosa not available: {e}") from e
+    import librosa
+    import numpy as np
 
-    # Load audio once
     y, sr = librosa.load(str(audio_path), sr=None)
     duration_ms = int(len(y) / sr * 1000)
 
-    # Convert dB threshold to amplitude ratio
     amplitude_thresh = 10 ** (silence_thresh / 20)
 
-    # Calculate frame-based RMS energy
-    frame_length = int(sr * 0.01)  # 10ms frames
+    frame_length = int(sr * 0.01)
     hop_length = frame_length // 2
 
     rms = librosa.feature.rms(y=y, frame_length=frame_length, hop_length=hop_length)[0]
     rms_max = np.max(rms) if np.max(rms) > 0 else 1.0
     rms_normalized = rms / rms_max
 
-    # Find frames above threshold (non-silent)
     is_speech = rms_normalized >= amplitude_thresh
 
     frame_times_ms = (
         librosa.frames_to_time(np.arange(len(rms)), sr=sr, hop_length=hop_length) * 1000
     )
 
-    # Find contiguous speech regions
-    chunks = []
+    chunks: list[tuple[int, int]] = []
     in_speech = False
-    speech_start = 0
+    speech_start = 0.0
 
     for i, speech in enumerate(is_speech):
         if speech and not in_speech:
@@ -225,7 +335,6 @@ def _detect_non_silent_fast(
             speech_end = frame_times_ms[i]
             chunks.append((int(speech_start), int(speech_end)))
 
-    # Handle case where audio ends in speech
     if in_speech:
         chunks.append((int(speech_start), duration_ms))
 
@@ -235,7 +344,6 @@ def _detect_non_silent_fast(
         for start, end in chunks[1:]:
             prev_start, prev_end = merged[-1]
             if start - prev_end < min_silence_len:
-                # Merge with previous chunk
                 merged[-1] = (prev_start, end)
             else:
                 merged.append((start, end))
@@ -243,6 +351,10 @@ def _detect_non_silent_fast(
 
     return chunks if chunks else [(0, duration_ms)]
 
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  ENERGY ANALYSIS UTILITIES
+# ═══════════════════════════════════════════════════════════════════════════
 
 def compute_energy_envelope(
     audio_path: str | Path,
@@ -301,7 +413,6 @@ def find_energy_minima(
     if not candidates:
         return []
 
-    # Sort by energy ascending (lowest energy = best boundary)
     candidates.sort(key=lambda x: x[1])
     return [t for t, _ in candidates[:top_n]]
 

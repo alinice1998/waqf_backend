@@ -12,7 +12,7 @@ COPY . .
 
 # Install Munajjam and WhisperX
 RUN pip install --no-cache-dir git+https://github.com/m-bain/whisperx.git && \
-    pip install --no-cache-dir ./munajjam && \
+    pip install --no-cache-dir . && \
     pip install "numpy<2"
 
 # Install API Server dependencies
