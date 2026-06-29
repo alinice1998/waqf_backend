@@ -18,6 +18,19 @@ import whisperx
 from rapidfuzz import fuzz
 from pathlib import Path
 
+# Workaround for pyannote.audio >= 3.1.0 where Binarize receives a generator
+try:
+    import types
+    from whisperx.vads.pyannote import Binarize
+    _original_binarize_call = Binarize.__call__
+    def _patched_binarize_call(self, scores, *args, **kwargs):
+        if isinstance(scores, types.GeneratorType):
+            scores = next(scores)
+        return _original_binarize_call(self, scores, *args, **kwargs)
+    Binarize.__call__ = _patched_binarize_call
+except Exception as e:
+    print(f"Failed to patch whisperx Binarize: {e}")
+
 from waqf_backend.models import Segment, WordTimestamp, SegmentType
 from waqf_backend.transcription.base import BaseTranscriber
 from waqf_backend.data import load_surah_ayahs
@@ -213,17 +226,17 @@ class Whisperx(BaseTranscriber):
 
         # 1.5 Apply Silence Snapping to Restore True Gaps
         try:
+            from .silence import detect_silences_adaptive, detect_silences_vad
             import logging
             _snap_logger = logging.getLogger("waqf_backend.whisperx")
 
+            # Use adaptive detection — automatically adapts to reverb/noise
             if silence_engine == "silero":
-                from .silence import detect_silences_vad
                 silences = detect_silences_vad(
                     str(audio_path),
                     min_silence_len=150,
                 )
             else:
-                from .silence import detect_silences_adaptive
                 silences = detect_silences_adaptive(
                     str(audio_path),
                     min_silence_len=150,

@@ -38,7 +38,7 @@ os.makedirs("temp_audio", exist_ok=True)
 jobs: dict = {}
 _executor = ThreadPoolExecutor(max_workers=1)
 
-def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity: float, silence_engine: str):
+def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity: float, silence_engine: str = "librosa"):
     """Runs the WaqfBackend alignment pipeline in a background thread."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -57,8 +57,8 @@ def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity
         logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
         
         # Detect raw silences for robust frontend Waqf segmentation
+        from waqf_backend.transcription.silence import detect_silences_adaptive, detect_silences_vad
         if silence_engine == "silero":
-            from waqf_backend.transcription.silence import detect_silences_vad
             raw_silences_ms = detect_silences_vad(
                 file_path,
                 min_silence_len=150,
