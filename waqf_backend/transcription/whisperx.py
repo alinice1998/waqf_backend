@@ -169,6 +169,8 @@ class Whisperx(BaseTranscriber):
                     "word": ref_words[k],
                     "start": mapped_alignments[k]["start"],
                     "end": mapped_alignments[k]["end"],
+                    "original_start": mapped_alignments[k]["start"],
+                    "original_end": mapped_alignments[k]["end"],
                     "confidence": mapped_alignments[k]["confidence"]
                 })
             else:
@@ -177,6 +179,8 @@ class Whisperx(BaseTranscriber):
                     "word": ref_words[k],
                     "start": prev_end,
                     "end": prev_end + 0.1,
+                    "original_start": prev_end,
+                    "original_end": prev_end + 0.1,
                     "confidence": 0.0
                 })
 
@@ -247,10 +251,7 @@ class Whisperx(BaseTranscriber):
                 f"Silence snapping skipped: {e}"
             )
 
-        # 2. Capture original timings AFTER overlap resolution and silence snapping
-        for wa in final_alignments:
-            wa["original_start"] = wa["start"]
-            wa["original_end"] = wa["end"]
+        # Original timings are now captured immediately upon creation.
 
         # 3. Apply Gap Distribution and Padding
         if final_alignments and final_alignments[0]["start"] > 0:
