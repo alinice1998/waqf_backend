@@ -25,7 +25,14 @@ try:
     _original_binarize_call = Binarize.__call__
     def _patched_binarize_call(self, scores, *args, **kwargs):
         if isinstance(scores, types.GeneratorType):
-            scores = next(scores)
+            try:
+                scores_val = next(scores)
+                scores = scores_val
+            except StopIteration as e:
+                if e.value is not None:
+                    scores = e.value
+                else:
+                    raise
         return _original_binarize_call(self, scores, *args, **kwargs)
     Binarize.__call__ = _patched_binarize_call
 except Exception as e:
