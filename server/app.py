@@ -38,7 +38,7 @@ os.makedirs("temp_audio", exist_ok=True)
 jobs: dict = {}
 _executor = ThreadPoolExecutor(max_workers=1)
 
-def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity: float):
+def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity: float, silence_engine: str):
     """Runs the WaqfBackend alignment pipeline in a background thread."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -52,18 +52,25 @@ def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity
 
         # 2. Transcribe
         with Whisperx(model_name="large-v2", device="cuda") as transcriber:
-            segments = transcriber.transcribe(file_path, surah_id=surah_number, silence_percentile=silence_sensitivity)
+            segments = transcriber.transcribe(file_path, surah_id=surah_number, silence_percentile=silence_sensitivity, silence_engine=silence_engine)
             
         logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
         
         # Detect raw silences for robust frontend Waqf segmentation
-        raw_silences_ms = detect_silences_adaptive(
-            file_path,
-            min_silence_len=150,
-            percentile=silence_sensitivity,
-            smooth_kernel=7,
-            merge_gap_ms=80,
-        )
+        if silence_engine == "silero":
+            from waqf_backend.transcription.silence import detect_silences_vad
+            raw_silences_ms = detect_silences_vad(
+                file_path,
+                min_silence_len=150,
+            )
+        else:
+            raw_silences_ms = detect_silences_adaptive(
+                file_path,
+                min_silence_len=150,
+                percentile=silence_sensitivity,
+                smooth_kernel=7,
+                merge_gap_ms=80,
+            )
         silences_sec = [[s[0]/1000.0, s[1]/1000.0] for s in raw_silences_ms]
 
         # 3. Align using WaqfBackend's core
@@ -128,7 +135,8 @@ async def align_audio(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     riwaya: str = Form("hafs"),
-    silence_sensitivity: float = Form(15.0)
+    silence_sensitivity: float = Form(15.0),
+    silence_engine: str = Form("librosa")
 ):
     job_id = str(uuid.uuid4())
     file_path = f"temp_audio/temp_{job_id}_{surah_number}.mp3"
@@ -139,7 +147,7 @@ async def align_audio(
     jobs[job_id] = {"status": "queued", "data": None, "error": None}
 
     background_tasks.add_task(
-        lambda: _executor.submit(_run_job, job_id, file_path, surah_number, silence_sensitivity)
+        lambda: _executor.submit(_run_job, job_id, file_path, surah_number, silence_sensitivity, silence_engine)
     )
 
     return JSONResponse({

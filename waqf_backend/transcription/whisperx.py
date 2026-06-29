@@ -45,6 +45,7 @@ class Whisperx(BaseTranscriber):
         surah_id: int,
         batch_size: int = 16,
         silence_percentile: float = 15.0,
+        silence_engine: str = "librosa",
     ) -> list[Segment]:
         ayahs = load_surah_ayahs(surah_id)
         if not ayahs:
@@ -212,18 +213,24 @@ class Whisperx(BaseTranscriber):
 
         # 1.5 Apply Silence Snapping to Restore True Gaps
         try:
-            from .silence import detect_silences_adaptive
             import logging
             _snap_logger = logging.getLogger("waqf_backend.whisperx")
 
-            # Use adaptive detection — automatically adapts to reverb/noise
-            silences = detect_silences_adaptive(
-                str(audio_path),
-                min_silence_len=150,
-                percentile=silence_percentile,
-                smooth_kernel=7,
-                merge_gap_ms=80,
-            )
+            if silence_engine == "silero":
+                from .silence import detect_silences_vad
+                silences = detect_silences_vad(
+                    str(audio_path),
+                    min_silence_len=150,
+                )
+            else:
+                from .silence import detect_silences_adaptive
+                silences = detect_silences_adaptive(
+                    str(audio_path),
+                    min_silence_len=150,
+                    percentile=silence_percentile,
+                    smooth_kernel=7,
+                    merge_gap_ms=80,
+                )
             _snap_logger.info(f"Silence snapping: found {len(silences)} silence regions")
 
             silences_sec = [(s[0]/1000.0, s[1]/1000.0) for s in silences]

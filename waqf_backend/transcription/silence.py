@@ -458,3 +458,45 @@ def extract_segment_audio(
     start_sample = int((start_ms / 1000) * sample_rate)
     end_sample = int((end_ms / 1000) * sample_rate)
     return waveform[start_sample:end_sample]
+
+def detect_silences_vad(
+    audio_path: str | Path,
+    min_silence_len: int = 150,
+) -> list[tuple[int, int]]:
+    import torch
+    import warnings
+
+    logger.info("Running Silero VAD for silence detection...")
+    
+    model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad',
+                                  model='silero_vad',
+                                  force_reload=False,
+                                  onnx=False)
+    
+    (get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+    wav = read_audio(str(audio_path), sampling_rate=16000)
+    speech_timestamps = get_speech_timestamps(wav, model, sampling_rate=16000)
+
+    total_samples = len(wav)
+    silences = []
+    
+    current_time = 0
+    for ts in speech_timestamps:
+        start_sample = ts['start']
+        end_sample = ts['end']
+        
+        if start_sample > current_time:
+            silence_dur_ms = ((start_sample - current_time) / 16000) * 1000
+            if silence_dur_ms >= min_silence_len:
+                silences.append((int((current_time / 16000) * 1000), int((start_sample / 16000) * 1000)))
+        
+        current_time = end_sample
+
+    if total_samples > current_time:
+        silence_dur_ms = ((total_samples - current_time) / 16000) * 1000
+        if silence_dur_ms >= min_silence_len:
+            silences.append((int((current_time / 16000) * 1000), int((total_samples / 16000) * 1000)))
+
+    logger.info(f"VAD detected {len(silences)} silent regions.")
+    return silences
