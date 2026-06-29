@@ -38,7 +38,7 @@ os.makedirs("temp_audio", exist_ok=True)
 jobs: dict = {}
 _executor = ThreadPoolExecutor(max_workers=1)
 
-def _run_job(job_id: str, file_path: str, surah_number: int):
+def _run_job(job_id: str, file_path: str, surah_number: int, silence_sensitivity: float):
     """Runs the WaqfBackend alignment pipeline in a background thread."""
     try:
         jobs[job_id]["status"] = "processing"
@@ -52,7 +52,7 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
 
         # 2. Transcribe
         with Whisperx(model_name="large-v2", device="cuda") as transcriber:
-            segments = transcriber.transcribe(file_path, surah_id=surah_number)
+            segments = transcriber.transcribe(file_path, surah_id=surah_number, silence_percentile=silence_sensitivity)
             
         logger.info(f"[Job {job_id[:8]}] Found {len(segments)} segments.")
         
@@ -60,7 +60,7 @@ def _run_job(job_id: str, file_path: str, surah_number: int):
         raw_silences_ms = detect_silences_adaptive(
             file_path,
             min_silence_len=150,
-            percentile=15.0,
+            percentile=silence_sensitivity,
             smooth_kernel=7,
             merge_gap_ms=80,
         )
@@ -127,7 +127,8 @@ async def align_audio(
     surah_number: int,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-    riwaya: str = Form("hafs")
+    riwaya: str = Form("hafs"),
+    silence_sensitivity: float = Form(15.0)
 ):
     job_id = str(uuid.uuid4())
     file_path = f"temp_audio/temp_{job_id}_{surah_number}.mp3"
@@ -138,7 +139,7 @@ async def align_audio(
     jobs[job_id] = {"status": "queued", "data": None, "error": None}
 
     background_tasks.add_task(
-        lambda: _executor.submit(_run_job, job_id, file_path, surah_number)
+        lambda: _executor.submit(_run_job, job_id, file_path, surah_number, silence_sensitivity)
     )
 
     return JSONResponse({

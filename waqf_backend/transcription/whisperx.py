@@ -44,6 +44,7 @@ class Whisperx(BaseTranscriber):
         *,
         surah_id: int,
         batch_size: int = 16,
+        silence_percentile: float = 15.0,
     ) -> list[Segment]:
         ayahs = load_surah_ayahs(surah_id)
         if not ayahs:
@@ -219,7 +220,7 @@ class Whisperx(BaseTranscriber):
             silences = detect_silences_adaptive(
                 str(audio_path),
                 min_silence_len=150,
-                percentile=15.0,
+                percentile=silence_percentile,
                 smooth_kernel=7,
                 merge_gap_ms=80,
             )
